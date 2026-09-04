@@ -44,7 +44,7 @@ const vertexShader = /* glsl */ `
   }
 
   void main() {
-    float time = uTime * 0.085 * uMotion;
+    float time = uTime * 0.105 * uMotion;
     vec3 p = position;
     p.x += (aSeed - 0.5) * 0.038;
     p.z += (hash(vec2(aSeed * 91.7, position.x)) - 0.5) * 0.034;
@@ -57,8 +57,8 @@ const vertexShader = /* glsl */ `
     float rear = smoothstep(0.02, 0.94, p.z / 3.3);
     float column = pow(noise(vec2(p.x * 1.12 + time * 0.22, 4.7)), 6.0);
     float spectralLift = column * rear * (0.42 + 0.58 * noise(vec2(p.x * 2.7, time + 2.4)));
-    p.y = (terrain - 0.51) * 2.45 + (detail - 0.5) * 0.55;
-    p.y += ridges * 0.35 + spectralLift * 2.0;
+    p.y = (terrain - 0.51) * 2.85 + (detail - 0.5) * 0.64;
+    p.y += ridges * 0.42 + spectralLift * 2.35;
     p.y += (hash(vec2(aSeed * 37.1, position.z * 11.3)) - 0.5) * 0.2;
 
     vec2 drift = vec2(sin(time * 0.21), cos(time * 0.17)) * 0.18;
@@ -67,7 +67,7 @@ const vertexShader = /* glsl */ `
     float pitC = crater(field, vec2(2.7, -0.85) + drift.yx * 0.55, 0.92);
     float pitD = crater(field, vec2(-0.25, 1.55) - drift * 0.45, 0.58);
     float pits = max(max(pitA, pitB), max(pitC, pitD));
-    p.y -= pits * 1.1;
+    p.y -= pits * 1.25;
 
     float edgeNoise = fbm(vec2(p.x * 0.39 + 6.2, time * 0.16 + 1.8));
     float frontEdge = -5.8 + (edgeNoise - 0.5) * 1.55;
