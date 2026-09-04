@@ -57,9 +57,9 @@ const vertexShader = /* glsl */ `
     float rear = smoothstep(0.02, 0.94, p.z / 3.3);
     float column = pow(noise(vec2(p.x * 1.12 + time * 0.22, 4.7)), 6.0);
     float spectralLift = column * rear * (0.42 + 0.58 * noise(vec2(p.x * 2.7, time + 2.4)));
-    p.y = (terrain - 0.51) * 1.65 + (detail - 0.5) * 0.38;
-    p.y += ridges * 0.22 + spectralLift * 1.45;
-    p.y += (hash(vec2(aSeed * 37.1, position.z * 11.3)) - 0.5) * 0.16;
+    p.y = (terrain - 0.51) * 2.45 + (detail - 0.5) * 0.55;
+    p.y += ridges * 0.35 + spectralLift * 2.0;
+    p.y += (hash(vec2(aSeed * 37.1, position.z * 11.3)) - 0.5) * 0.2;
 
     vec2 drift = vec2(sin(time * 0.21), cos(time * 0.17)) * 0.18;
     float pitA = crater(field, vec2(-2.45, -0.35) + drift, 0.88);
@@ -67,10 +67,10 @@ const vertexShader = /* glsl */ `
     float pitC = crater(field, vec2(2.7, -0.85) + drift.yx * 0.55, 0.92);
     float pitD = crater(field, vec2(-0.25, 1.55) - drift * 0.45, 0.58);
     float pits = max(max(pitA, pitB), max(pitC, pitD));
-    p.y -= pits * 0.78;
+    p.y -= pits * 1.1;
 
     float edgeNoise = fbm(vec2(p.x * 0.39 + 6.2, time * 0.16 + 1.8));
-    float frontEdge = -3.05 + (edgeNoise - 0.5) * 1.25;
+    float frontEdge = -5.8 + (edgeNoise - 0.5) * 1.55;
     float rearEdge = 3.02 - (noise(vec2(p.x * 0.31 - 3.8, time * 0.13)) - 0.5) * 0.8;
     float edgeMask = smoothstep(frontEdge, frontEdge + 0.34, p.z);
     edgeMask *= 1.0 - smoothstep(rearEdge - 0.3, rearEdge, p.z);
@@ -99,7 +99,7 @@ const fragmentShader = /* glsl */ `
     float alpha = grain * vAlpha;
     if (alpha < 0.025) discard;
     vec3 silver = mix(vec3(0.42), vec3(0.88), clamp(vLight, 0.0, 1.0));
-    gl_FragColor = vec4(silver, alpha * 0.82);
+    gl_FragColor = vec4(silver, alpha * 0.56);
   }
 `;
 
@@ -108,7 +108,7 @@ function PointSurface() {
   const { camera, size } = useThree();
   const geometry = useMemo(() => {
     const columns = 480;
-    const rows = 280;
+    const rows = 360;
     const positions = new Float32Array(columns * rows * 3);
     const seeds = new Float32Array(columns * rows);
     let vertex = 0;
@@ -118,7 +118,7 @@ function PointSurface() {
         const offset = vertex * 3;
         positions[offset] = (column / (columns - 1) - 0.5) * 14.2;
         positions[offset + 1] = 0;
-        positions[offset + 2] = (row / (rows - 1) - 0.5) * 6.8;
+        positions[offset + 2] = -6.2 + (row / (rows - 1)) * 9.6;
         seeds[vertex] = Math.abs(Math.sin(vertex * 12.9898) * 43758.5453) % 1;
         vertex += 1;
       }
