@@ -74,6 +74,7 @@ const vertexShader = /* glsl */ `
     float rearEdge = 3.02 - (noise(vec2(p.x * 0.31 - 3.8, time * 0.13)) - 0.5) * 0.8;
     float edgeMask = smoothstep(frontEdge, frontEdge + 0.34, p.z);
     edgeMask *= 1.0 - smoothstep(rearEdge - 0.3, rearEdge, p.z);
+    float sideMask = 1.0 - smoothstep(8.55, 9.2, abs(p.x));
     float holeMask = 1.0 - smoothstep(0.34, 0.88, pits);
     float looseGrain = step(0.045 + (1.0 - edgeMask) * 0.36, aSeed);
 
@@ -85,7 +86,7 @@ const vertexShader = /* glsl */ `
     float depthLight = mix(0.52, 1.0, smoothstep(-3.3, 2.6, p.z));
     vLight = (0.37 + heightLight * 0.58) * depthLight;
     vLight *= 0.74 + aSeed * 0.35;
-    vAlpha = edgeMask * holeMask * looseGrain;
+    vAlpha = edgeMask * sideMask * holeMask * looseGrain;
   }
 `;
 
@@ -107,7 +108,7 @@ function PointSurface() {
   const material = useRef<THREE.ShaderMaterial>(null);
   const { camera, size } = useThree();
   const geometry = useMemo(() => {
-    const columns = 480;
+    const columns = 600;
     const rows = 360;
     const positions = new Float32Array(columns * rows * 3);
     const seeds = new Float32Array(columns * rows);
@@ -116,7 +117,7 @@ function PointSurface() {
     for (let row = 0; row < rows; row += 1) {
       for (let column = 0; column < columns; column += 1) {
         const offset = vertex * 3;
-        positions[offset] = (column / (columns - 1) - 0.5) * 14.2;
+        positions[offset] = (column / (columns - 1) - 0.5) * 18.4;
         positions[offset + 1] = 0;
         positions[offset + 2] = -6.2 + (row / (rows - 1)) * 9.6;
         seeds[vertex] = Math.abs(Math.sin(vertex * 12.9898) * 43758.5453) % 1;
