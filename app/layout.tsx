@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Caveat, Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
 const geistSans = Geist({
@@ -12,6 +12,13 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+const handDisplay = Caveat({
+  variable: '--font-hand-display',
+  subsets: ['latin'],
+  weight: '400',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   title: 'Panda Studio — Different noise, one loud room',
   description:
@@ -21,7 +28,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${handDisplay.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }
