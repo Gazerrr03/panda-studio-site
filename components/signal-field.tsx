@@ -137,7 +137,11 @@ function PointSurface() {
   });
 
   return (
-    <points geometry={geometry} frustumCulled={false}>
+    <points
+      geometry={geometry}
+      position={[0, size.width < 760 ? -0.6 : -0.95, 0]}
+      frustumCulled={false}
+    >
       <shaderMaterial
         ref={material}
         vertexShader={vertexShader}
