@@ -1,24 +1,16 @@
 'use client';
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 const vertexShader = /* glsl */ `
-  varying vec2 vUv;
-
-  void main() {
-    vUv = uv;
-    gl_Position = vec4(position.xy, 0.0, 1.0);
-  }
-`;
-
-const fragmentShader = /* glsl */ `
   uniform float uTime;
   uniform float uMotion;
-  uniform vec2 uPointer;
-  uniform vec2 uResolution;
-  varying vec2 vUv;
+  uniform float uPointScale;
+  attribute float aSeed;
+  varying float vAlpha;
+  varying float vLight;
 
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -40,95 +32,119 @@ const fragmentShader = /* glsl */ `
     float amplitude = 0.54;
     for (int i = 0; i < 5; i++) {
       value += amplitude * noise(p);
-      p = p * 2.02 + 19.19;
+      p = p * 2.03 + vec2(13.17, 9.41);
       amplitude *= 0.48;
     }
     return value;
   }
 
+  float crater(vec2 point, vec2 center, float radius) {
+    float d = length((point - center) / radius);
+    return 1.0 - smoothstep(0.28, 1.0, d);
+  }
+
   void main() {
-    vec2 pixel = gl_FragCoord.xy;
-    vec2 uv = pixel / uResolution;
-    float aspect = uResolution.x / max(uResolution.y, 1.0);
-    float time = uTime * 0.055 * uMotion;
+    float time = uTime * 0.085 * uMotion;
+    vec3 p = position;
+    p.x += (aSeed - 0.5) * 0.038;
+    p.z += (hash(vec2(aSeed * 91.7, position.x)) - 0.5) * 0.034;
+    vec2 field = vec2(p.x, p.z);
 
-    float broadWave = fbm(vec2(uv.x * 2.15 - time, 2.7 + time * 0.38));
-    float longRhythm = sin(uv.x * 8.4 - time * 2.1) * 0.035;
-    float shortRhythm = sin(uv.x * 19.0 + 1.6 + time * 1.4) * 0.016;
-    float pointerLift = exp(-pow((uv.x - uPointer.x) * 5.2, 2.0)) * 0.13 * uMotion;
-    float leftPeak = exp(-pow((uv.x - 0.15 + sin(time * 0.31) * 0.012) * 11.0, 2.0)) * 0.20;
-    float mainPeak = exp(-pow((uv.x - 0.39 - sin(time * 0.52) * 0.022) * 11.5, 2.0)) * 0.40;
-    float secondPeak = exp(-pow((uv.x - 0.62 + sin(time * 0.37) * 0.016) * 14.0, 2.0)) * 0.27;
-    float thirdPeak = exp(-pow((uv.x - 0.80 - sin(time * 0.43) * 0.014) * 15.5, 2.0)) * 0.18;
-    float edgeFalloff = smoothstep(0.0, 0.09, uv.x) * smoothstep(0.0, 0.08, 1.0 - uv.x);
-    float crest = 0.13 + broadWave * 0.20 + longRhythm + shortRhythm;
-    crest += leftPeak + mainPeak + secondPeak + thirdPeak + pointerLift;
-    crest *= mix(0.48, 1.0, edgeFalloff);
-    crest = clamp(crest, 0.12, 0.79);
+    float terrain = fbm(field * vec2(0.34, 0.48) + vec2(time * 0.35, -time * 0.22));
+    float detail = fbm(field * vec2(1.05, 1.28) + vec2(-time * 0.48, time * 0.29));
+    float ridges = 1.0 - abs(noise(vec2(p.x * 0.72 - time * 0.26, p.z * 0.55)) * 2.0 - 1.0);
 
-    float cellSize = mix(3.1, 4.1, step(900.0, uResolution.x));
-    vec2 cell = floor(pixel / cellSize);
-    vec2 local = fract(pixel / cellSize);
-    float seed = hash(cell);
-    vec2 jitter = vec2(hash(cell + 13.7), hash(cell + 41.3));
-    vec2 center = mix(vec2(0.34), vec2(0.66), jitter);
-    float radius = mix(0.13, 0.31, hash(cell + 8.4));
-    float dotShape = 1.0 - smoothstep(radius, radius + 0.15, length(local - center));
+    float rear = smoothstep(0.02, 0.94, p.z / 3.3);
+    float column = pow(noise(vec2(p.x * 1.12 + time * 0.22, 4.7)), 6.0);
+    float spectralLift = column * rear * (0.42 + 0.58 * noise(vec2(p.x * 2.7, time + 2.4)));
+    p.y = (terrain - 0.51) * 1.65 + (detail - 0.5) * 0.38;
+    p.y += ridges * 0.22 + spectralLift * 1.45;
+    p.y += (hash(vec2(aSeed * 37.1, position.z * 11.3)) - 0.5) * 0.16;
 
-    float depth = crest - uv.y;
-    float belowCrest = smoothstep(-0.006, 0.012, depth);
-    float floorFade = smoothstep(0.015, 0.14, uv.y);
-    float cloud = fbm(vec2(uv.x * 4.1 * aspect + time * 0.7, uv.y * 5.3 - time));
-    float current = fbm(vec2(uv.x * 11.0 - time * 1.5, uv.y * 7.0));
-    float density = 0.48 + cloud * 0.46 + current * 0.17;
-    float particleGate = step(1.0 - clamp(density, 0.0, 0.96), seed);
+    vec2 drift = vec2(sin(time * 0.21), cos(time * 0.17)) * 0.18;
+    float pitA = crater(field, vec2(-2.45, -0.35) + drift, 0.88);
+    float pitB = crater(field, vec2(0.55, 0.25) - drift * 0.7, 0.72);
+    float pitC = crater(field, vec2(2.7, -0.85) + drift.yx * 0.55, 0.92);
+    float pitD = crater(field, vec2(-0.25, 1.55) - drift * 0.45, 0.58);
+    float pits = max(max(pitA, pitB), max(pitC, pitD));
+    p.y -= pits * 0.78;
 
-    float crestGlow = exp(-abs(depth) * 21.0);
-    float depthLight = mix(0.48, 0.93, crestGlow);
-    float shimmer = 0.84 + 0.16 * hash(cell + floor(uTime * 4.0 * uMotion));
-    float alpha = dotShape * particleGate * belowCrest * floorFade;
-    alpha *= (0.58 + crestGlow * 0.58) * shimmer;
+    float edgeNoise = fbm(vec2(p.x * 0.39 + 6.2, time * 0.16 + 1.8));
+    float frontEdge = -3.05 + (edgeNoise - 0.5) * 1.25;
+    float rearEdge = 3.02 - (noise(vec2(p.x * 0.31 - 3.8, time * 0.13)) - 0.5) * 0.8;
+    float edgeMask = smoothstep(frontEdge, frontEdge + 0.34, p.z);
+    edgeMask *= 1.0 - smoothstep(rearEdge - 0.3, rearEdge, p.z);
+    float holeMask = 1.0 - smoothstep(0.34, 0.88, pits);
+    float looseGrain = step(0.045 + (1.0 - edgeMask) * 0.36, aSeed);
 
-    vec3 color = vec3(depthLight);
-    gl_FragColor = vec4(color, clamp(alpha, 0.0, 0.96));
+    vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+    gl_PointSize = clamp(uPointScale / max(4.0, -mvPosition.z), 1.0, 2.7);
+
+    float heightLight = smoothstep(-0.55, 0.8, p.y);
+    float depthLight = mix(0.52, 1.0, smoothstep(-3.3, 2.6, p.z));
+    vLight = (0.37 + heightLight * 0.58) * depthLight;
+    vLight *= 0.74 + aSeed * 0.35;
+    vAlpha = edgeMask * holeMask * looseGrain;
   }
 `;
 
-function ParticleCurtain() {
+const fragmentShader = /* glsl */ `
+  varying float vAlpha;
+  varying float vLight;
+
+  void main() {
+    vec2 point = gl_PointCoord - 0.5;
+    float grain = 1.0 - smoothstep(0.34, 0.52, length(point));
+    float alpha = grain * vAlpha;
+    if (alpha < 0.025) discard;
+    vec3 silver = mix(vec3(0.42), vec3(0.88), clamp(vLight, 0.0, 1.0));
+    gl_FragColor = vec4(silver, alpha * 0.82);
+  }
+`;
+
+function PointSurface() {
   const material = useRef<THREE.ShaderMaterial>(null);
-  const pointerTarget = useRef(new THREE.Vector2(0.5, 0.5));
-  const drawingBufferSize = useRef(new THREE.Vector2(1, 1));
-  const { gl } = useThree();
+  const { camera, size } = useThree();
+  const geometry = useMemo(() => {
+    const columns = 480;
+    const rows = 280;
+    const positions = new Float32Array(columns * rows * 3);
+    const seeds = new Float32Array(columns * rows);
+    let vertex = 0;
 
-  useEffect(() => {
-    const onPointerMove = (event: PointerEvent) => {
-      pointerTarget.current.set(
-        event.clientX / window.innerWidth,
-        1 - event.clientY / window.innerHeight,
-      );
-    };
+    for (let row = 0; row < rows; row += 1) {
+      for (let column = 0; column < columns; column += 1) {
+        const offset = vertex * 3;
+        positions[offset] = (column / (columns - 1) - 0.5) * 14.2;
+        positions[offset + 1] = 0;
+        positions[offset + 2] = (row / (rows - 1) - 0.5) * 6.8;
+        seeds[vertex] = Math.abs(Math.sin(vertex * 12.9898) * 43758.5453) % 1;
+        vertex += 1;
+      }
+    }
 
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    return () => window.removeEventListener('pointermove', onPointerMove);
+    const points = new THREE.BufferGeometry();
+    points.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    points.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
+    return points;
   }, []);
 
   useFrame((state) => {
-    if (!material.current) return;
-    gl.getDrawingBufferSize(drawingBufferSize.current);
-    material.current.uniforms.uTime.value = state.clock.elapsedTime;
-    material.current.uniforms.uPointer.value.lerp(pointerTarget.current, 0.035);
-    material.current.uniforms.uResolution.value.copy(drawingBufferSize.current);
+    camera.position.set(0, size.width < 760 ? 4.9 : 4.35, size.width < 760 ? 9.8 : 8.0);
+    camera.lookAt(0, size.width < 760 ? -0.45 : -0.25, 0);
+    if (material.current) material.current.uniforms.uTime.value = state.clock.elapsedTime;
   });
 
   return (
-    <mesh>
-      <planeGeometry args={[2, 2]} />
+    <points geometry={geometry} frustumCulled={false}>
       <shaderMaterial
         ref={material}
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
         transparent
         depthWrite={false}
+        blending={THREE.NormalBlending}
         uniforms={{
           uTime: { value: 0 },
           uMotion: {
@@ -138,11 +154,10 @@ function ParticleCurtain() {
                 ? 0
                 : 1,
           },
-          uPointer: { value: new THREE.Vector2(0.5, 0.5) },
-          uResolution: { value: new THREE.Vector2(1, 1) },
+          uPointScale: { value: 18 },
         }}
       />
-    </mesh>
+    </points>
   );
 }
 
@@ -152,11 +167,12 @@ export function SignalField() {
       className="signal-field"
       dpr={[1, 1.35]}
       fallback={<div className="signal-field signal-field-fallback" aria-hidden="true" />}
+      camera={{ position: [0, 4.35, 8], fov: 42, near: 0.1, far: 30 }}
       gl={{ alpha: false, antialias: false, powerPreference: 'high-performance' }}
       aria-hidden="true"
     >
       <color attach="background" args={['#111210']} />
-      <ParticleCurtain />
+      <PointSurface />
     </Canvas>
   );
 }
