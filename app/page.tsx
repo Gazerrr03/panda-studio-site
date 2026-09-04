@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import { SignalFieldLoader } from '@/components/signal-field-loader';
+import { ClubIntro } from '@/components/club-intro';
 import { AlbumArchive } from '@/components/album-archive';
-import { albums, roles } from '@/content/studio';
+import { albums, introActs, roles } from '@/content/studio';
 
 export default function Home() {
   return (
@@ -49,6 +50,8 @@ export default function Home() {
           <span>SILENT SIGNAL</span>
         </div>
       </section>
+
+      <ClubIntro acts={introActs} />
 
       <section className="records-section page-shell" id="records">
         <div className="section-heading">
