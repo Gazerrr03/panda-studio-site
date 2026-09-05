@@ -2,6 +2,7 @@
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
+import { useTheme } from '@/components/theme-switcher';
 import * as THREE from 'three';
 
 const vertexShader = /* glsl */ `
@@ -91,6 +92,7 @@ const vertexShader = /* glsl */ `
 `;
 
 const fragmentShader = /* glsl */ `
+  uniform float uLightTheme;
   varying float vAlpha;
   varying float vLight;
 
@@ -100,11 +102,13 @@ const fragmentShader = /* glsl */ `
     float alpha = grain * vAlpha;
     if (alpha < 0.025) discard;
     vec3 silver = mix(vec3(0.42), vec3(0.88), clamp(vLight, 0.0, 1.0));
-    gl_FragColor = vec4(silver, alpha * 0.56);
+    vec3 graphite = mix(vec3(0.37, 0.42, 0.36), vec3(0.15, 0.23, 0.20), clamp(vLight, 0.0, 1.0));
+    gl_FragColor = vec4(mix(silver, graphite, uLightTheme), alpha * mix(0.56, 0.48, uLightTheme));
   }
 `;
 
 function PointSurface() {
+  const theme = useTheme();
   const material = useRef<THREE.ShaderMaterial>(null);
   const { camera, size } = useThree();
   const geometry = useMemo(() => {
@@ -152,6 +156,7 @@ function PointSurface() {
         blending={THREE.NormalBlending}
         uniforms={{
           uTime: { value: 0 },
+          uLightTheme: { value: theme === 'light' ? 1 : 0 },
           uMotion: {
             value:
               typeof window !== 'undefined' &&
@@ -167,6 +172,7 @@ function PointSurface() {
 }
 
 export function SignalField() {
+  const theme = useTheme();
   return (
     <Canvas
       className="signal-field"
@@ -176,7 +182,7 @@ export function SignalField() {
       gl={{ alpha: false, antialias: false, powerPreference: 'high-performance' }}
       aria-hidden="true"
     >
-      <color attach="background" args={['#111210']} />
+      <color attach="background" args={[theme === 'light' ? '#f5f4ef' : '#111210']} />
       <PointSurface />
     </Canvas>
   );

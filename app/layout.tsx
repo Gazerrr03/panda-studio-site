@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Caveat, Geist, Geist_Mono } from 'next/font/google';
+import { I18nProvider } from '@/components/i18n-provider';
+import { siteCopy } from '@/content/i18n';
 import './globals.css';
 
 const geistSans = Geist({
@@ -20,16 +22,18 @@ const handDisplay = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: 'Panda Studio — Different noise, one loud room',
-  description:
-    'An independent studio gathering unconventional creative people to make strange, useful things together.',
+  title: siteCopy.en.metadata.title,
+  description: siteCopy.en.metadata.description,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';try{var s=localStorage.getItem('panda-studio-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.dataset.theme=t})()` }} />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${handDisplay.variable}`}>
-        {children}
+        <I18nProvider>{children}</I18nProvider>
       </body>
     </html>
   );

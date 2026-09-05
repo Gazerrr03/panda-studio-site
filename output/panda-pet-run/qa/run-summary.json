@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "run_dir": "/Users/qizhi_dong/Projects/panda landing page/site/output/panda-pet-run",
+  "spritesheet": "/Users/qizhi_dong/Projects/panda landing page/site/output/panda-pet-run/final/spritesheet.webp",
+  "validation": "/Users/qizhi_dong/Projects/panda landing page/site/output/panda-pet-run/final/validation.json",
+  "contact_sheet": "/Users/qizhi_dong/Projects/panda landing page/site/output/panda-pet-run/qa/contact-sheet.png",
+  "review": "/Users/qizhi_dong/Projects/panda landing page/site/output/panda-pet-run/qa/review.json",
+  "videos": "/Users/qizhi_dong/Projects/panda landing page/site/output/panda-pet-run/qa/videos",
+  "package": "/Users/qizhi_dong/.codex/pets/panda"
+}

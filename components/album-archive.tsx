@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import type { Album } from '@/content/studio';
+import type { SiteCopy } from '@/content/i18n';
 
-export function AlbumArchive({ albums }: { albums: Album[] }) {
+export function AlbumArchive({ albums, copy }: { albums: Album[]; copy: SiteCopy['archive'] }) {
   const [selectedId, setSelectedId] = useState(albums[0]?.id ?? '');
   const selected = albums.find((album) => album.id === selectedId) ?? albums[0];
 
@@ -11,7 +12,7 @@ export function AlbumArchive({ albums }: { albums: Album[] }) {
 
   return (
     <div className="archive-browser">
-      <ul className="album-row" aria-label="Project records">
+      <ul className="album-row" aria-label={copy.projects}>
         {albums.map((album, index) => {
           const isSelected = album.id === selected.id;
           return (
@@ -19,7 +20,7 @@ export function AlbumArchive({ albums }: { albums: Album[] }) {
               <button
                 className="album-button"
                 type="button"
-                aria-label={`Open ${album.title}`}
+                aria-label={copy.openRecord(album.title)}
                 aria-pressed={isSelected}
                 aria-controls="record-details"
                 onClick={() => setSelectedId(album.id)}
@@ -41,11 +42,11 @@ export function AlbumArchive({ albums }: { albums: Album[] }) {
 
       <article className="record-details" id="record-details" key={selected.id} aria-live="polite">
         <div className="record-heading">
-          <p className="eyebrow">Now playing / {selected.label}</p>
+          <p className="eyebrow">{copy.nowPlaying} / {selected.label}</p>
           <h3>{selected.title}</h3>
         </div>
         <div className="liner-notes">
-          {selected.placeholder && <p className="content-status">Sample content · replace with verified work</p>}
+          {selected.placeholder && <p className="content-status">{copy.sampleContent}</p>}
           <p>{selected.note}</p>
         </div>
         <ol className="track-list">
