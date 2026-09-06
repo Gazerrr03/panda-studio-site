@@ -37,18 +37,9 @@ export type IntroAct = {
   scenes: IntroScene[];
 };
 
-export type Role = {
-  id: string;
-  instrument: string;
-  alias: string;
-  call: string;
-  description: string;
-};
-
 export type StudioContent = {
   introActs: IntroAct[];
   albums: Album[];
-  roles: Role[];
 };
 
 // reveal uses normalized scroll progress (0–1). Keep a small gap between windows so each card reads on its own.
@@ -170,7 +161,7 @@ export const introActs: IntroAct[] = [
         side: 'left',
         kicker: 'SIGNAL / 02',
         title: 'One loud room.',
-        copy: '[Placeholder] Replace this with the studio vision and the invitation to join.',
+        copy: '[Placeholder] Replace this with the studio vision and what comes next.',
         imageLabel: 'IMAGE PLACEHOLDER / FINAL FRAME',
         imageTone: 'ember',
         alt: 'Placeholder for a final photograph representing the studio vision',
@@ -218,33 +209,14 @@ export const albums: Album[] = [
   },
 ];
 
-export const roles: Role[] = [
-  {
-    id: 'guitar',
-    instrument: 'Guitar',
-    alias: 'Design collaborator',
-    call: 'Shape the melody.',
-    description: 'Turn an unclear feeling into a visual language, an interaction, or a form people can actually use.',
-  },
-  {
-    id: 'drums',
-    instrument: 'Drums',
-    alias: 'Engineering collaborator',
-    call: 'Make the room move.',
-    description: 'Give ideas a reliable rhythm: prototype fast, build carefully, and keep the strange parts alive in production.',
-  },
-];
-
 type SceneTranslation = Pick<IntroScene, 'kicker' | 'title' | 'copy' | 'imageLabel' | 'alt'>;
 type ActTranslation = Pick<IntroAct, 'label' | 'title' | 'description'> & {
   scenes: Record<string, SceneTranslation>;
 };
 type AlbumTranslation = Pick<Album, 'title' | 'label' | 'format' | 'note' | 'tracks'>;
-type RoleTranslation = Pick<Role, 'instrument' | 'alias' | 'call' | 'description'>;
 type StudioTranslation = {
   acts: Record<string, ActTranslation>;
   albums: Record<string, AlbumTranslation>;
-  roles: Record<string, RoleTranslation>;
 };
 
 const chineseStudio: StudioTranslation = {
@@ -313,7 +285,7 @@ const chineseStudio: StudioTranslation = {
         'signal-02': {
           kicker: '信号 / 02',
           title: '同一间大房间',
-          copy: '[占位] 换成工作室愿景，以及邀请别人加入的文字。',
+          copy: '[占位] 换成工作室愿景，以及下一步要做的事。',
           imageLabel: '图片占位 / 最终画面',
           alt: '代表工作室愿景的最终照片占位图',
         },
@@ -343,25 +315,11 @@ const chineseStudio: StudioTranslation = {
       tracks: ['01 / 参与者', '02 / 一夜规则', '03 / 意外噪音', '04 / 留下来的东西'],
     },
   },
-  roles: {
-    guitar: {
-      instrument: '吉他',
-      alias: '设计协作者',
-      call: '塑造旋律',
-      description: '把模糊的感受变成视觉语言、交互，或一种真正能被人使用的形式。',
-    },
-    drums: {
-      instrument: '鼓组',
-      alias: '工程协作者',
-      call: '让房间动起来',
-      description: '给想法一个可靠的节奏：快速做原型，认真构建，并让那些奇怪的部分留在产品里。',
-    },
-  },
 };
 
 export function getStudioContent(locale: Locale): StudioContent {
   if (locale === 'en') {
-    return { introActs, albums, roles };
+    return { introActs, albums };
   }
 
   return {
@@ -380,10 +338,6 @@ export function getStudioContent(locale: Locale): StudioContent {
     albums: albums.map((album) => ({
       ...album,
       ...chineseStudio.albums[album.id],
-    })),
-    roles: roles.map((role) => ({
-      ...role,
-      ...chineseStudio.roles[role.id],
     })),
   };
 }

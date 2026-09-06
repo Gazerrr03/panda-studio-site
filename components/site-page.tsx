@@ -112,13 +112,12 @@ export function SitePage() {
         <div className="header-tools">
           <nav aria-label={copy.navigation.primary}>
             <a href="#records">{copy.navigation.records}</a>
-            <a href="#auditions">{copy.navigation.auditions}</a>
           </nav>
           <div className="appearance-tools"><LanguageSwitcher /><ThemeSwitcher /></div>
         </div>
       </header>
 
-      <PandaPet key={`${locale}-${petDocked ? 'docked' : 'top'}`} docked={petDocked} />
+      <PandaPet key={locale} docked={petDocked} />
 
       <section ref={homeRef} className="hero" id="top" data-locale={locale}>
         <SignalFieldLoader />
@@ -154,42 +153,6 @@ export function SitePage() {
           <p>{copy.records.description}</p>
         </div>
         <AlbumArchive albums={studio.albums} copy={copy.archive} />
-      </section>
-
-      <section className="auditions-section" id="auditions">
-        <div className="page-shell">
-          <div className="section-heading auditions-heading">
-            <p className="eyebrow">{copy.auditions.eyebrow}</p>
-            <h2>
-              <TitleLines lines={copy.auditions.title} />
-            </h2>
-            <p>{copy.auditions.description}</p>
-          </div>
-
-          <div className="role-list">
-            {studio.roles.map((role, index) => (
-              <article className="role" key={role.id}>
-                <span className="role-number">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <div>
-                  <p className="eyebrow">{role.alias}</p>
-                  <h3>{role.instrument}</h3>
-                </div>
-                <div className="role-copy">
-                  <strong>{role.call}</strong>
-                  <p>{role.description}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="audition-callout">
-            <p className="eyebrow">{copy.auditions.calloutEyebrow}</p>
-            <p>{copy.auditions.callout}</p>
-            <span>{copy.auditions.contact}</span>
-          </div>
-        </div>
       </section>
 
       <footer className="site-footer page-shell">

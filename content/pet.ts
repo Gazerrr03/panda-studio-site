@@ -20,7 +20,6 @@ export type PetCopy = {
   shortcuts: {
     home: string;
     records: string;
-    auditions: string;
   };
   askLabel: string;
   suggestions: readonly string[];
@@ -41,17 +40,16 @@ const petCopy = {
     shortcuts: {
       home: 'Back to home',
       records: 'Open the records',
-      auditions: 'Join the room',
     },
     askLabel: 'Ask about this site',
-    suggestions: ['Who are you?', 'What do you make?', 'How can I join?'],
+    suggestions: ['Who are you?', 'What do you make?'],
     inputLabel: 'Your question',
     inputPlaceholder: 'Ask about Panda Studio…',
     submit: 'Ask',
     close: 'Close helper',
     inputEmpty: 'Type a question first.',
     unknownAnswer:
-      'I only know this room for now. Ask me about the studio, the records, the gear, or joining the room.',
+      'I only know this room for now. Ask me about the studio, the records, or the gear.',
     answers: [
       {
         id: 'identity',
@@ -77,14 +75,6 @@ const petCopy = {
         link: { href: '#records', label: 'Go to the records' },
       },
       {
-        id: 'join',
-        question: 'How can I join?',
-        answer:
-          'The open call is forming a band rather than filling fixed job boxes. Design collaborators bring melody; engineering collaborators make the room move. The contact channel still needs to be added.',
-        keywords: ['how can i join', 'join', 'hiring', 'open call', 'audition', '招募', '加入'],
-        link: { href: '#auditions', label: 'See the open call' },
-      },
-      {
         id: 'room',
         question: 'Why is this site built like a room?',
         answer:
@@ -107,16 +97,15 @@ const petCopy = {
     shortcuts: {
       home: '回到主页',
       records: '查看作品',
-      auditions: '查看招募',
     },
     askLabel: '问问这个网页',
-    suggestions: ['你们是谁？', '你们做什么？', '怎么加入？'],
+    suggestions: ['你们是谁？', '你们做什么？'],
     inputLabel: '你的问题',
     inputPlaceholder: '问问 Panda Studio……',
     submit: '提问',
     close: '关闭小助手',
     inputEmpty: '先输入一个问题。',
-    unknownAnswer: '我目前只认识这间房。你可以问我工作室、作品、设备，或加入方式。',
+    unknownAnswer: '我目前只认识这间房。你可以问我工作室、作品或设备。',
     answers: [
       {
         id: 'identity',
@@ -140,14 +129,6 @@ const petCopy = {
           '作品区把项目做成唱片封套：从问题、第一版粗糙原型，到发生了什么变化，再到最终剪辑。目前其中一些条目仍然是占位内容。',
         keywords: ['作品', '作品区', '唱片', '档案', '项目故事', '案例'],
         link: { href: '#records', label: '去看作品区' },
-      },
-      {
-        id: 'join',
-        question: '怎么加入？',
-        answer:
-          '这里不是在填充固定职位，而是在组一支乐队。设计协作者负责塑造旋律，工程协作者让房间动起来；联系渠道目前还待补充。',
-        keywords: ['怎么加入', '加入', '招募', '招聘', '试音', '协作者'],
-        link: { href: '#auditions', label: '去看招募' },
       },
       {
         id: 'room',

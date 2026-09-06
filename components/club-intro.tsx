@@ -120,6 +120,7 @@ export function ClubIntro({ acts, copy, locale }: ClubIntroProps) {
 
     const render = (timestamp: number) => {
       frame = 0;
+      if (mobile.matches) return;
       if (!inRange && !reduceMotion) return;
 
       const targetProgress = getTargetProgress();
@@ -175,7 +176,7 @@ export function ClubIntro({ acts, copy, locale }: ClubIntroProps) {
     };
 
     const update = () => {
-      if (frame || (!inRange && !reduceMotion)) return;
+      if (mobile.matches || frame || (!inRange && !reduceMotion)) return;
       frame = window.requestAnimationFrame(render);
     };
 

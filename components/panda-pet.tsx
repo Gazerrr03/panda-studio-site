@@ -116,9 +116,6 @@ export function PandaPet({ docked }: PandaPetProps) {
               <a href="#records" onClick={() => setOpen(false)}>
                 <span>02</span>{copy.shortcuts.records}
               </a>
-              <a href="#auditions" onClick={() => setOpen(false)}>
-                <span>03</span>{copy.shortcuts.auditions}
-              </a>
             </nav>
           </div>
 

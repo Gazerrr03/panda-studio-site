@@ -18,7 +18,6 @@ export type SiteCopy = {
   navigation: {
     primary: string;
     records: string;
-    auditions: string;
   };
   hero: {
     eyebrow: string;
@@ -39,17 +38,12 @@ export type SiteCopy = {
   };
   archive: {
     projects: string;
+    previous: string;
+    next: string;
+    backToProjects: string;
     openRecord: (title: string) => string;
     nowPlaying: string;
     sampleContent: string;
-  };
-  auditions: {
-    eyebrow: string;
-    title: SectionTitle;
-    description: string;
-    calloutEyebrow: string;
-    callout: string;
-    contact: string;
   };
   footer: {
     tagline: string;
@@ -75,7 +69,6 @@ export const siteCopy = {
     navigation: {
       primary: 'Primary navigation',
       records: 'Records',
-      auditions: 'Auditions',
     },
     hero: {
       eyebrow: 'Independent creative studio · Est. somewhere underground',
@@ -98,19 +91,12 @@ export const siteCopy = {
     },
     archive: {
       projects: 'Project records',
+      previous: 'Previous project',
+      next: 'Next project',
+      backToProjects: 'Back to projects',
       openRecord: (title) => `Open ${title}`,
       nowPlaying: 'Now playing',
       sampleContent: 'Sample content · replace with verified work',
-    },
-    auditions: {
-      eyebrow: 'Open call / Auditions',
-      title: ['We are not hiring.', 'We are forming a band.'],
-      description:
-        'Titles are aliases, not boxes. Bring another instrument if these two do not sound like you.',
-      calloutEyebrow: 'Rehearsal room',
-      callout:
-        'Show us the one thing you made that still feels a little too strange for the usual portfolio.',
-      contact: 'CONTACT CHANNEL / TO BE ADDED',
     },
     footer: {
       tagline: 'Different noise. One loud room.',
@@ -133,7 +119,6 @@ export const siteCopy = {
     navigation: {
       primary: '主导航',
       records: '作品',
-      auditions: '招募',
     },
     hero: {
       eyebrow: '独立创意工作室 · 成立于某个地下空间',
@@ -144,7 +129,7 @@ export const siteCopy = {
     },
     intro: {
       eyebrow: '俱乐部介绍 / 三幕',
-      title: ['进来找到你的“乐器”'],
+      title: ['进来', '找到你的“乐器”'],
       chapters: '俱乐部介绍章节',
     },
     records: {
@@ -154,17 +139,12 @@ export const siteCopy = {
     },
     archive: {
       projects: '项目作品',
+      previous: '上一个作品',
+      next: '下一个作品',
+      backToProjects: '返回作品列表',
       openRecord: (title) => `打开 ${title}`,
       nowPlaying: '正在播放',
       sampleContent: '示例内容 · 替换为已验证的作品',
-    },
-    auditions: {
-      eyebrow: '公开招募 / 试音',
-      title: ['我们不是在招聘', '我们正在组一支乐队'],
-      description: '职位是别名，不是框框。如果下面两种声音都不像你，带上另一件乐器来。',
-      calloutEyebrow: '排练室',
-      callout: '把那件对常规作品集来说有点太奇怪、但你仍然做出来的东西给我们看看。',
-      contact: '联系渠道 / 待补充',
     },
     footer: {
       tagline: '不同的噪音，同一间大房间',
