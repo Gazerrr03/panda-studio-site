@@ -8,10 +8,10 @@ const LOCALE_STORAGE_KEY = 'panda-studio-locale';
 const LOCALE_CHANGE_EVENT = 'panda-studio-locale-change';
 
 function getStoredLocale(): Locale {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return 'zh';
 
   const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-  return storedLocale === 'zh' ? 'zh' : 'en';
+  return storedLocale === 'en' ? 'en' : 'zh';
 }
 
 function subscribeToLocale(onChange: () => void) {
@@ -25,7 +25,7 @@ function subscribeToLocale(onChange: () => void) {
 }
 
 function getServerLocale(): Locale {
-  return 'en';
+  return 'zh';
 }
 
 type I18nContextValue = {

@@ -7,8 +7,15 @@ const key = 'panda-studio-theme';
 const changeEvent = 'panda-studio-theme-change';
 type Theme = 'light' | 'dark';
 
-function systemTheme(): Theme {
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+function getStoredTheme(): Theme {
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved === 'light' || saved === 'dark') return saved;
+  } catch {
+    // Storage may be unavailable; the light default still works.
+  }
+
+  return 'light';
 }
 
 function applyTheme(theme: Theme) {
@@ -17,23 +24,15 @@ function applyTheme(theme: Theme) {
 }
 
 function subscribe(onChange: () => void) {
-  const media = window.matchMedia('(prefers-color-scheme: light)');
   const syncPreference = () => {
-    let theme = systemTheme();
-    try {
-      const saved = localStorage.getItem(key);
-      if (saved === 'light' || saved === 'dark') theme = saved;
-    } catch { /* Storage may be unavailable; system preference still works. */ }
-    applyTheme(theme);
+    applyTheme(getStoredTheme());
   };
   window.addEventListener(changeEvent, onChange);
   window.addEventListener('storage', syncPreference);
-  media.addEventListener('change', syncPreference);
   syncPreference();
   return () => {
     window.removeEventListener(changeEvent, onChange);
     window.removeEventListener('storage', syncPreference);
-    media.removeEventListener('change', syncPreference);
   };
 }
 
@@ -42,7 +41,7 @@ function snapshot(): Theme {
 }
 
 export function useTheme() {
-  return useSyncExternalStore(subscribe, snapshot, () => 'dark' as Theme);
+  return useSyncExternalStore(subscribe, snapshot, () => 'light' as Theme);
 }
 
 export function ThemeSwitcher() {

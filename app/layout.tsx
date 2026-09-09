@@ -22,15 +22,15 @@ const handDisplay = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: siteCopy.en.metadata.title,
-  description: siteCopy.en.metadata.description,
+  title: siteCopy.zh.metadata.title,
+  description: siteCopy.zh.metadata.description,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="zh" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `(function(){var t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';try{var s=localStorage.getItem('panda-studio-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.dataset.theme=t})()` }} />
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var t='light';try{var s=localStorage.getItem('panda-studio-theme');if(s==='light'||s==='dark')t=s}catch(e){}document.documentElement.dataset.theme=t})()` }} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${handDisplay.variable}`}>
         <I18nProvider>{children}</I18nProvider>
