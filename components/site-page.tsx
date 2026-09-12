@@ -94,6 +94,7 @@ export function SitePage() {
 
   return (
     <main data-locale={locale}>
+      <div className="global-signal" aria-hidden="true"><SignalFieldLoader /></div>
       <header
         className={`site-header page-shell${headerVisible ? '' : ' site-header--hidden'}`}
       >
@@ -120,7 +121,6 @@ export function SitePage() {
       <PandaPet key={locale} docked={petDocked} />
 
       <section ref={homeRef} className="hero" id="top" data-locale={locale}>
-        <SignalFieldLoader />
 
         <div className="hero-copy page-shell">
           <p className="eyebrow">{copy.hero.eyebrow}</p>

@@ -39,8 +39,7 @@ export type StudioContent = {
   albums: Album[];
 };
 
-// The intro is a two-dimensional content matrix: page scroll changes dimensions,
-// while native horizontal scroll moves between cards inside one dimension.
+// Three chapters in the vertical studio archive. Every entry stays in reading order.
 export const introDimensions: IntroDimension[] = [
   {
     id: 'about',

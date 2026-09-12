@@ -95,7 +95,7 @@ a { color: inherit; text-decoration: none; }
   min-height: 100dvh;
   overflow: hidden;
   isolation: isolate;
-  background: var(--paper);
+  background: transparent;
 }
 
 .hero::before {
@@ -123,6 +123,14 @@ a { color: inherit; text-decoration: none; }
     radial-gradient(ellipse at 62% 58%, rgba(205, 205, 198, .16), transparent 46%),
     var(--paper);
 }
+
+/* Layer order: fixed field (-1 in main's context), content, navigation (20), helper (25), modal top layer. */
+main { isolation: isolate; }
+.global-signal { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.records-section { background: rgba(var(--paper-rgb), .76); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-radius: 18px; padding-inline: clamp(16px, 3vw, 48px); }
+.site-footer { background: rgba(var(--paper-rgb), .7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+@supports not (backdrop-filter: blur(1px)) { .records-section, .site-footer { background: rgba(var(--paper-rgb), .96); } }
+@media (prefers-reduced-transparency: reduce) { .records-section, .site-footer { background: var(--paper); backdrop-filter: none; } }
 
 .site-header {
   position: fixed;

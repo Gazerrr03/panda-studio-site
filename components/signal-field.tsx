@@ -111,9 +111,11 @@ function PointSurface() {
   const theme = useTheme();
   const material = useRef<THREE.ShaderMaterial>(null);
   const { camera, size } = useThree();
+  const compact = size.width < 768;
   const geometry = useMemo(() => {
-    const columns = 600;
-    const rows = 360;
+    // The field now remains visible for the whole visit; bound mobile GPU work.
+    const columns = compact ? 280 : 600;
+    const rows = compact ? 168 : 360;
     const positions = new Float32Array(columns * rows * 3);
     const seeds = new Float32Array(columns * rows);
     let vertex = 0;
@@ -133,7 +135,7 @@ function PointSurface() {
     points.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     points.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
     return points;
-  }, []);
+  }, [compact]);
 
   useFrame((state) => {
     camera.position.set(0, size.width < 760 ? 4.9 : 4.35, size.width < 760 ? 9.8 : 8.0);
