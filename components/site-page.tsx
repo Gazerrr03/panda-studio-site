@@ -142,7 +142,12 @@ export function SitePage() {
         </div>
       </section>
 
-      <ClubIntro acts={studio.introActs} copy={copy.intro} locale={locale} />
+      <ClubIntro
+        dimensions={studio.introDimensions}
+        sharedCapabilities={studio.sharedCapabilities}
+        copy={copy.intro}
+        locale={locale}
+      />
 
       <section className="records-section page-shell" id="records">
         <div className="section-heading">

@@ -1,217 +1,123 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
-import type { CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties, KeyboardEvent } from 'react';
 import Image from 'next/image';
-import type { IntroAct, IntroScene } from '@/content/studio';
-import type { Locale } from '@/content/i18n';
-import type { SiteCopy } from '@/content/i18n';
+import type { IntroCard, IntroDimension } from '@/content/studio';
+import type { Locale, SiteCopy } from '@/content/i18n';
 import { TitleLines } from '@/components/title-lines';
 
 type ClubIntroProps = {
-  acts: IntroAct[];
+  dimensions: IntroDimension[];
+  sharedCapabilities: string[];
   copy: SiteCopy['intro'];
   locale: Locale;
 };
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
-const smoothStep = (value: number) => value * value * (3 - 2 * value);
 
-// Keep scroll input native, but let the visual playhead catch up at a controlled rate.
-// This filters trackpad/touch momentum without making the page feel like it is hijacking scroll.
-const PLAYHEAD_RESPONSE_MS = 180;
-const PLAYHEAD_MAX_PROGRESS_PER_SECOND = 1.8;
-const PLAYHEAD_EPSILON = 0.0005;
-
-function advancePlayhead(current: number, target: number, elapsedMs: number) {
-  const delta = target - current;
-  if (Math.abs(delta) <= PLAYHEAD_EPSILON) return target;
-
-  const response = 1 - Math.exp(-elapsedMs / PLAYHEAD_RESPONSE_MS);
-  const easedStep = Math.abs(delta) * response;
-  const maxStep = PLAYHEAD_MAX_PROGRESS_PER_SECOND * elapsedMs / 1000;
-  const step = Math.min(easedStep, maxStep);
-
-  return current + Math.sign(delta) * step;
-}
-
-function SceneCard({
-  scene,
-  register,
-}: {
-  scene: IntroScene;
-  register: (node: HTMLElement | null) => void;
-}) {
-  const style = {
-    '--scene-x': scene.desktop.x,
-    '--scene-y': scene.desktop.y,
-    '--scene-width': scene.desktop.width,
-    '--scene-rotate': scene.desktop.rotate,
-    '--scene-mobile-x': scene.mobile.x,
-    '--scene-mobile-y': scene.mobile.y,
-    '--scene-mobile-width': scene.mobile.width,
-    '--scene-mobile-rotate': scene.mobile.rotate,
-    '--scene-alpha': 0,
-    '--copy-progress': 0,
-    '--scene-lift': '22vh',
-    '--scene-copy-lift': '32vh',
-    '--scene-scale': 0.97,
-  } as CSSProperties;
-
+function MatrixCard({ card, index, active }: { card: IntroCard; index: number; active: boolean }) {
   return (
-    <article
-      ref={register}
-      className="club-intro__scene"
-      data-act={scene.act}
-      data-side={scene.side}
-      data-reveal-start={scene.reveal[0]}
-      data-reveal-end={scene.reveal[1]}
-      style={style}
-    >
-      <div className="club-intro__visual">
-        <div className={`club-intro__media club-intro__media--${scene.imageTone}`}>
-          {scene.image ? (
+    <li className="club-intro__card-item" data-active={active} data-card-index={index}>
+      <article className="club-intro__card">
+        <div className={`club-intro__media club-intro__media--${card.imageTone}`}>
+          {card.image ? (
             <Image
               className="club-intro__image"
-              src={scene.image}
-              alt={scene.alt}
+              src={card.image}
+              alt={card.alt}
               fill
-              sizes="(max-width: 767px) 84vw, 38vw"
+              sizes="(max-width: 767px) 84vw, 54vw"
             />
           ) : (
-            <span className="club-intro__placeholder">{scene.imageLabel}</span>
+            <span className="club-intro__placeholder">{card.imageLabel}</span>
           )}
-          <span className="club-intro__media-index">{scene.kicker}</span>
+          <span className="club-intro__media-index">{card.kicker}</span>
         </div>
-        <div className="club-intro__caption">
-          <p className="eyebrow">{scene.kicker}</p>
-          <h3>{scene.title}</h3>
+
+        <div className="club-intro__card-copy">
+          <h4>{card.title}</h4>
+          <p>{card.copy}</p>
+          {card.status ? <span className="club-intro__status">{card.status}</span> : null}
         </div>
-      </div>
-      <div className="club-intro__body">
-        <p>{scene.copy}</p>
-      </div>
-    </article>
+      </article>
+    </li>
   );
 }
 
-export function ClubIntro({ acts, copy, locale }: ClubIntroProps) {
-  const sectionRef = useRef<HTMLElement>(null);
-  const sceneElements = useRef(new Map<string, HTMLElement>());
-  const scenes = useMemo(() => acts.flatMap((act) => act.scenes), [acts]);
+export function ClubIntro({ dimensions, sharedCapabilities, copy, locale }: ClubIntroProps) {
+  const carouselRefs = useRef(new Map<string, HTMLOListElement>());
+  const carouselFrames = useRef(new Map<string, number>());
+  const [activeDimension, setActiveDimension] = useState(0);
+  const [activeCards, setActiveCards] = useState<Record<string, number>>({});
+  const [cardProgress, setCardProgress] = useState<Record<string, number>>({});
 
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
+  useEffect(() => () => {
+    carouselFrames.current.forEach((frame) => window.cancelAnimationFrame(frame));
+  }, []);
 
-    let frame = 0;
-    let inRange = false;
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const mobile = window.matchMedia('(max-width: 767px)');
-    let visualProgress = 0;
-    let lastFrameTime: number | null = null;
+  const goToDimension = (index: number) => {
+    setActiveDimension(index);
+  };
 
-    const getTargetProgress = () => {
-      if (reduceMotion) return 1;
-
-      const distance = Math.max(section.offsetHeight - window.innerHeight, 1);
-      return clamp(-section.getBoundingClientRect().top / distance);
+  const handleDimensionKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const keyByDirection: Record<string, number> = {
+      ArrowRight: (index + 1) % dimensions.length,
+      ArrowDown: (index + 1) % dimensions.length,
+      ArrowLeft: (index - 1 + dimensions.length) % dimensions.length,
+      ArrowUp: (index - 1 + dimensions.length) % dimensions.length,
+      Home: 0,
+      End: dimensions.length - 1,
     };
+    const nextIndex = keyByDirection[event.key];
+    if (nextIndex === undefined) return;
+    event.preventDefault();
+    goToDimension(nextIndex);
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLButtonElement>(`[aria-controls="${dimensions[nextIndex].id}-panel"]`)?.focus();
+    });
+  };
 
-    const render = (timestamp: number) => {
-      frame = 0;
-      if (mobile.matches) return;
-      if (!inRange && !reduceMotion) return;
+  const updateActiveCard = (dimension: IntroDimension, carousel: HTMLOListElement) => {
+    const previousFrame = carouselFrames.current.get(dimension.id);
+    if (previousFrame) window.cancelAnimationFrame(previousFrame);
 
-      const targetProgress = getTargetProgress();
-      if (lastFrameTime === null || reduceMotion) {
-        visualProgress = targetProgress;
-      } else {
-        const elapsedMs = Math.min(Math.max(timestamp - lastFrameTime, 1), 100);
-        visualProgress = advancePlayhead(visualProgress, targetProgress, elapsedMs);
-      }
-      lastFrameTime = timestamp;
+    const frame = window.requestAnimationFrame(() => {
+      const cards = Array.from(carousel.children) as HTMLElement[];
+      const maxScroll = Math.max(carousel.scrollWidth - carousel.clientWidth, 1);
+      const progress = clamp(carousel.scrollLeft / maxScroll);
+      const nearest = cards.reduce((bestIndex, card, index) => {
+        const bestDistance = Math.abs(cards[bestIndex].offsetLeft - carousel.scrollLeft);
+        const distance = Math.abs(card.offsetLeft - carousel.scrollLeft);
+        return distance < bestDistance ? index : bestIndex;
+      }, 0);
 
-      const progress = visualProgress;
-      section.style.setProperty('--club-progress', String(progress));
-      const mastheadProgress = reduceMotion ? 0 : smoothStep(clamp((progress - 0.94) / 0.06));
-      section.style.setProperty('--masthead-alpha', String(1 - mastheadProgress));
-      section.style.setProperty('--masthead-lift', '0vh');
-      section.dataset.act = progress < 0.28 ? 'room' : progress < 0.67 ? 'gear' : 'signal';
+      setActiveCards((current) => current[dimension.id] === nearest
+        ? current
+        : { ...current, [dimension.id]: nearest });
+      setCardProgress((current) => current[dimension.id] === progress
+        ? current
+        : { ...current, [dimension.id]: progress });
+      carouselFrames.current.delete(dimension.id);
+    });
 
-      scenes.forEach((scene) => {
-        const element = sceneElements.current.get(scene.id);
-        if (!element) return;
+    carouselFrames.current.set(dimension.id, frame);
+  };
 
-        const [start, end] = scene.reveal;
-        const windowLength = Math.max(end - start, 0.001);
-        const enterDuration = Math.min(0.028, windowLength * 0.3);
-        const enterProgress = reduceMotion
-          ? 1
-          : smoothStep(clamp((progress - start) / enterDuration));
-        const exitDuration = mobile.matches ? 0.028 : 0.03;
-        const exitProgress = reduceMotion || progress <= end
-          ? 0
-          : smoothStep(clamp((progress - end) / exitDuration));
-        const copyStart = start + Math.min(0.026, windowLength * 0.28);
-        const copyDuration = Math.min(0.032, windowLength * 0.34);
-        const copyProgress = reduceMotion
-          ? 1
-          : smoothStep(clamp((progress - copyStart) / copyDuration));
-        const exitAlpha = 1 - exitProgress;
-        const alpha = enterProgress * exitAlpha;
-        const imageLift = (1 - enterProgress) * 22 - exitProgress * 28;
-        const bodyLift = (1 - copyProgress) * 32 - exitProgress * 28;
+  const goToCard = (dimension: IntroDimension, index: number, behavior: ScrollBehavior) => {
+    const carousel = carouselRefs.current.get(dimension.id);
+    const card = carousel?.children[index] as HTMLElement | undefined;
+    if (!carousel || !card) return;
 
-        element.style.setProperty('--scene-alpha', String(alpha));
-        element.style.setProperty('--scene-lift', `${imageLift}vh`);
-        element.style.setProperty('--scene-copy-lift', `${bodyLift}vh`);
-        element.style.setProperty('--scene-scale', String(0.97 + enterProgress * 0.03));
-        element.style.setProperty('--copy-progress', String(copyProgress * exitAlpha));
-      });
-
-      if (!reduceMotion && Math.abs(targetProgress - visualProgress) > PLAYHEAD_EPSILON) {
-        frame = window.requestAnimationFrame(render);
-      }
-    };
-
-    const update = () => {
-      if (mobile.matches || frame || (!inRange && !reduceMotion)) return;
-      frame = window.requestAnimationFrame(render);
-    };
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        inRange = entry.isIntersecting;
-
-        if (!inRange && !reduceMotion) {
-          visualProgress = getTargetProgress();
-          lastFrameTime = null;
-        }
-        if (inRange || reduceMotion) update();
-      },
-      { rootMargin: '100% 0px' },
-    );
-
-    observer.observe(section);
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    update();
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, [scenes]);
+    carousel.scrollTo({ left: card.offsetLeft, behavior });
+    setActiveCards((current) => ({ ...current, [dimension.id]: index }));
+  };
 
   return (
     <section
-      ref={sectionRef}
       className="club-intro"
       id="room"
-      data-act="room"
+      data-dimension={dimensions[activeDimension]?.id}
       data-locale={locale}
     >
       <div className="club-intro__track">
@@ -220,33 +126,122 @@ export function ClubIntro({ acts, copy, locale }: ClubIntroProps) {
 
           <header className="club-intro__masthead">
             <p className="eyebrow">{copy.eyebrow}</p>
-            <h2>
-              <TitleLines lines={copy.title} />
-            </h2>
+            <h2><TitleLines lines={copy.title} /></h2>
           </header>
 
-          <ol className="club-intro__act-list" aria-label={copy.chapters}>
-            {acts.map((act) => (
-              <li key={act.id} data-act-item={act.id}>
-                <span>{act.number}</span>
-                <strong>{act.label}</strong>
+          <ol className="club-intro__dimension-list" aria-label={copy.dimensions} role="tablist">
+            {dimensions.map((dimension, index) => (
+              <li key={dimension.id}>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeDimension === index}
+                  aria-controls={`${dimension.id}-panel`}
+                  tabIndex={activeDimension === index ? 0 : -1}
+                  onClick={() => goToDimension(index)}
+                  onKeyDown={(event) => handleDimensionKeyDown(event, index)}
+                >
+                  <span>{dimension.number}</span>
+                  <strong>{dimension.label}</strong>
+                </button>
               </li>
             ))}
           </ol>
 
-          <div className="club-intro__scenes">
-            {scenes.map((scene) => (
-              <SceneCard
-                key={scene.id}
-                scene={scene}
-                register={(node) => {
-                  if (node) sceneElements.current.set(scene.id, node);
-                  else sceneElements.current.delete(scene.id);
-                }}
-              />
-            ))}
-          </div>
+          <div className="club-intro__matrix">
+            {dimensions.map((dimension, dimensionIndex) => {
+              const isActive = activeDimension === dimensionIndex;
+              const activeCard = activeCards[dimension.id] ?? 0;
 
+              return (
+                <section
+                  key={dimension.id}
+                  className="club-intro__dimension"
+                  id={`${dimension.id}-panel`}
+                  role="tabpanel"
+                  tabIndex={isActive ? 0 : -1}
+                  aria-hidden={!isActive}
+                  aria-labelledby={`${dimension.id}-title`}
+                  hidden={!isActive}
+                >
+                  <header className="club-intro__dimension-heading">
+                    <p className="eyebrow">{dimension.number} / {dimension.label}</p>
+                    <h3 id={`${dimension.id}-title`}>{dimension.title}</h3>
+                    <p className="club-intro__dimension-description">{dimension.description}</p>
+                  </header>
+
+                  <section
+                    className="club-intro__carousel-shell"
+                    style={{
+                      '--card-progress': cardProgress[dimension.id] ?? 0,
+                    } as CSSProperties}
+                  >
+                    <ol
+                      ref={(node) => {
+                        if (node) carouselRefs.current.set(dimension.id, node);
+                        else carouselRefs.current.delete(dimension.id);
+                      }}
+                      className="club-intro__carousel"
+                      aria-label={dimension.label}
+                      onScroll={(event) => updateActiveCard(dimension, event.currentTarget)}
+                    >
+                      {dimension.cards.map((card, index) => (
+                        <MatrixCard
+                          key={card.id}
+                          card={card}
+                          index={index}
+                          active={activeCard === index}
+                        />
+                      ))}
+                    </ol>
+
+                    <div className="club-intro__carousel-controls">
+                      <span className="club-intro__card-meter" aria-hidden="true"><i /></span>
+                      <div>
+                        <span className="club-intro__position" aria-live="polite">
+                          {String(activeCard + 1).padStart(2, '0')} / {String(dimension.cards.length).padStart(2, '0')}
+                        </span>
+                        <button
+                          type="button"
+                          aria-label={copy.previousCard}
+                          disabled={activeCard === 0}
+                          tabIndex={isActive ? 0 : -1}
+                          onClick={(event) => goToCard(
+                            dimension,
+                            activeCard - 1,
+                            event.detail === 0 ? 'auto' : 'smooth',
+                          )}
+                        >
+                          <span aria-hidden="true">←</span>
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={copy.nextCard}
+                          disabled={activeCard === dimension.cards.length - 1}
+                          tabIndex={isActive ? 0 : -1}
+                          onClick={(event) => goToCard(
+                            dimension,
+                            activeCard + 1,
+                            event.detail === 0 ? 'auto' : 'smooth',
+                          )}
+                        >
+                          <span aria-hidden="true">→</span>
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+
+                </section>
+              );
+            })}
+
+            <aside className="club-intro__capabilities" aria-label={copy.sharedCapabilities}>
+              <span>{copy.sharedCapabilities}</span>
+              <ul>
+                {sharedCapabilities.map((capability) => <li key={capability}>{capability}</li>)}
+              </ul>
+            </aside>
+          </div>
         </div>
       </div>
     </section>

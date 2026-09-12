@@ -29,7 +29,10 @@ export type SiteCopy = {
   intro: {
     eyebrow: string;
     title: SectionTitle;
-    chapters: string;
+    dimensions: string;
+    previousCard: string;
+    nextCard: string;
+    sharedCapabilities: string;
   };
   records: {
     eyebrow: string;
@@ -79,9 +82,12 @@ export const siteCopy = {
       indexSignal: 'SILENT SIGNAL',
     },
     intro: {
-      eyebrow: 'Club intro / Three acts',
-      title: ['Come inside.', 'Find your instrument.'],
-      chapters: 'Club introduction chapters',
+      eyebrow: 'Club intro / Content matrix',
+      title: ['Meet Panda.', 'In three dimensions.'],
+      dimensions: 'Club introduction dimensions',
+      previousCard: 'Previous card',
+      nextCard: 'Next card',
+      sharedCapabilities: 'Shared capabilities',
     },
     records: {
       eyebrow: 'Archive / Records',
@@ -128,9 +134,12 @@ export const siteCopy = {
       indexSignal: '静默信号',
     },
     intro: {
-      eyebrow: '俱乐部介绍 / 三幕',
-      title: ['进来', '找到你的“乐器”'],
-      chapters: '俱乐部介绍章节',
+      eyebrow: '俱乐部介绍 / 内容矩阵',
+      title: ['三个维度', '认识 Panda'],
+      dimensions: '俱乐部介绍内容维度',
+      previousCard: '上一张卡片',
+      nextCard: '下一张卡片',
+      sharedCapabilities: '共同能力',
     },
     records: {
       eyebrow: '档案 / 作品',
