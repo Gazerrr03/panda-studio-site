@@ -29,6 +29,8 @@
     "build/**",
     "dist/**",
     "coverage/**",
+    "output/**",
+    ".playwright-cli/**",
     "next-env.d.ts"
   ],
   "rules": {
