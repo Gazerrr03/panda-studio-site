@@ -43,10 +43,11 @@ export type SiteCopy = {
     projects: string;
     previous: string;
     next: string;
+    browseHint: string;
+    closeProject: string;
     backToProjects: string;
     openRecord: (title: string) => string;
     nowPlaying: string;
-    sampleContent: string;
   };
   footer: {
     tagline: string;
@@ -91,18 +92,19 @@ export const siteCopy = {
     },
     records: {
       eyebrow: 'Archive / Records',
-      title: ['Things we made,', 'pressed as albums.'],
+      title: ['Things we made,', 'held as objects.'],
       description:
-        'Open a sleeve to read the project like liner notes—not as a wall of case-study cards.',
+        'Move through the archive. Open an object when something catches your eye.',
     },
     archive: {
       projects: 'Project records',
       previous: 'Previous project',
       next: 'Next project',
+      browseHint: 'Drag to browse / Click to open',
+      closeProject: 'Close project',
       backToProjects: 'Back to projects',
       openRecord: (title) => `Open ${title}`,
-      nowPlaying: 'Now playing',
-      sampleContent: 'Sample content · replace with verified work',
+      nowPlaying: 'Project',
     },
     footer: {
       tagline: 'Different noise. One loud room.',
@@ -129,7 +131,8 @@ export const siteCopy = {
     hero: {
       eyebrow: '独立创意工作室 · 成立于某个地下空间',
       title: ['不同的噪音', '同一间大房间'],
-      description: '我们聚集那些无法被常规排名准确归类的人，然后一起做出奇怪而有用的东西。',
+      description:
+        '我们聚集那些无法被常规排名准确归类的人，然后一起做出奇怪而有用的东西。',
       cta: '播放作品集',
       indexSignal: '静默信号',
     },
@@ -143,17 +146,18 @@ export const siteCopy = {
     },
     records: {
       eyebrow: '档案 / 作品',
-      title: ['我们做过的事，', '压成一张张唱片'],
-      description: '打开一张唱片封套，像读唱片内页一样读懂项目——而不是面对一墙案例卡片。',
+      title: ['我们做过的事，', '收进一个个对象'],
+      description: '滑过档案，看到让你感兴趣的对象，就打开它。',
     },
     archive: {
       projects: '项目作品',
       previous: '上一个作品',
       next: '下一个作品',
+      browseHint: '拖动浏览 / 点击打开',
+      closeProject: '关闭作品',
       backToProjects: '返回作品列表',
       openRecord: (title) => `打开 ${title}`,
-      nowPlaying: '正在播放',
-      sampleContent: '示例内容 · 替换为已验证的作品',
+      nowPlaying: '项目',
     },
     footer: {
       tagline: '不同的噪音，同一间大房间',

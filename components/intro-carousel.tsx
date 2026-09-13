@@ -3,9 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import useEmblaCarousel from 'embla-carousel-react';
+import { ArrowLeft, ArrowRight, X } from 'lucide-react';
 import type { IntroCard, IntroDimension } from '@/content/studio';
 import type { Locale } from '@/content/i18n';
 import styles from './club-intro.module.css';
+
+const prefersReducedMotion = () =>
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function IntroCarousel({
   dimension,
@@ -24,113 +28,21 @@ export function IntroCarousel({
   const [detail, setDetail] = useState<IntroCard | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
-  const reduced = useRef(false);
-
-  useEffect(() => {
-    if (!api) return;
-    const node = api.rootNode();
-    let origin = { x: 0, y: 0 };
-    let dragged = false;
-    let horizontal = 0;
-    let wheelConsumed = false;
-    let wheelReset: number | undefined;
-    const down = (event: PointerEvent) => {
-      origin = { x: event.clientX, y: event.clientY };
-      dragged = false;
-    };
-    const move = (event: PointerEvent) => {
-      if (event.buttons || event.pointerType === 'touch')
-        dragged ||=
-          Math.hypot(event.clientX - origin.x, event.clientY - origin.y) > 8;
-    };
-    const click = (event: globalThis.MouseEvent) => {
-      if (dragged && event.detail > 0) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      dragged = false;
-    };
-    const wheel = (event: WheelEvent) => {
-      if (event.ctrlKey) return;
-      const delta =
-        Math.abs(event.deltaX) > Math.abs(event.deltaY)
-          ? event.deltaX
-          : event.shiftKey
-            ? event.deltaY
-            : 0;
-      if (!delta) return;
-      event.preventDefault();
-      window.clearTimeout(wheelReset);
-      wheelReset = window.setTimeout(() => {
-        horizontal = 0;
-        wheelConsumed = false;
-      }, 110);
-      if (wheelConsumed) return;
-      horizontal += delta * (event.deltaMode === 1 ? 16 : 1);
-      if (Math.abs(horizontal) < 28) return;
-      if (horizontal > 0) api.scrollNext(reduced.current);
-      else api.scrollPrev(reduced.current);
-      horizontal = 0;
-      wheelConsumed = true;
-    };
-    node.addEventListener('pointerdown', down, true);
-    node.addEventListener('pointermove', move, true);
-    node.addEventListener('click', click, true);
-    node.addEventListener('wheel', wheel, { passive: false });
-    return () => {
-      node.removeEventListener('pointerdown', down, true);
-      node.removeEventListener('pointermove', move, true);
-      node.removeEventListener('click', click, true);
-      node.removeEventListener('wheel', wheel);
-      window.clearTimeout(wheelReset);
-    };
-  }, [api]);
-
-  useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const change = () => {
-      reduced.current = query.matches;
-    };
-    change();
-    query.addEventListener('change', change);
-    return () => query.removeEventListener('change', change);
-  }, []);
+  const pointer = useRef({ x: 0, y: 0, moved: false });
 
   useEffect(() => {
     if (!api) return;
     const sync = () => setSelected(api.selectedScrollSnap());
-    const paint = () => {
-      const progress = api.scrollProgress();
-      const snaps = api.scrollSnapList();
-      api.slideNodes().forEach((slide, index) => {
-        const distance = Math.min(
-          1,
-          Math.abs(snaps[index] - progress) *
-            Math.max(1, dimension.cards.length - 1),
-        );
-        slide.style.setProperty('--focus-scale', String(1 - distance * 0.08));
-        slide.style.setProperty('--focus-opacity', String(1 - distance * 0.45));
-      });
-    };
     sync();
-    paint();
-    api
-      .on('select', sync)
-      .on('scroll', paint)
-      .on('reInit', sync)
-      .on('reInit', paint);
+    api.on('select', sync).on('reInit', sync);
     return () => {
-      api
-        .off('select', sync)
-        .off('scroll', paint)
-        .off('reInit', sync)
-        .off('reInit', paint);
+      api.off('select', sync).off('reInit', sync);
     };
-  }, [api, dimension.cards.length]);
+  }, [api]);
 
   useEffect(() => {
     if (!detail || !dialog.current) return;
-    dialog.current.showModal();
+    if (!dialog.current.open) dialog.current.showModal();
     const oldOverflow = document.documentElement.style.overflow;
     document.documentElement.style.overflow = 'hidden';
     return () => {
@@ -143,6 +55,7 @@ export function IntroCarousel({
     dialog.current?.close();
     setDetail(null);
   }, []);
+
   const visual = (card: IntroCard, index: number) => (
     <span className={styles.media} data-tone={card.imageTone}>
       <span className={styles.visual}>
@@ -151,7 +64,7 @@ export function IntroCarousel({
             src={card.image}
             alt={card.alt}
             fill
-            sizes="(max-width: 767px) 85vw, 55vw"
+            sizes="(max-width: 767px) 86vw, (max-width: 1199px) 66vw, 820px"
           />
         ) : (
           <span className={styles.placeholder} aria-hidden="true">
@@ -173,7 +86,24 @@ export function IntroCarousel({
       aria-roledescription={locale === 'zh' ? '轮播' : 'carousel'}
       aria-label={dimension.label}
     >
-      <div ref={viewport} className={styles.viewport}>
+      <fieldset
+        ref={viewport}
+        className={styles.viewport}
+        aria-label={dimension.label}
+        onPointerDownCapture={(event) => {
+          pointer.current = {
+            x: event.clientX,
+            y: event.clientY,
+            moved: false,
+          };
+        }}
+        onPointerMoveCapture={(event) => {
+          const { x, y } = pointer.current;
+          if (Math.hypot(event.clientX - x, event.clientY - y) > 8) {
+            pointer.current.moved = true;
+          }
+        }}
+      >
         <ol className={styles.slides}>
           {dimension.cards.map((card, index) => (
             <li
@@ -187,27 +117,32 @@ export function IntroCarousel({
                   className={styles.cardOpen}
                   aria-haspopup="dialog"
                   aria-label={`${locale === 'zh' ? '查看详情：' : 'View details: '}${card.title}`}
-                  onFocus={() => api?.scrollTo(index, reduced.current)}
+                  onFocus={() => api?.scrollTo(index, prefersReducedMotion())}
                   onKeyDown={(event) => {
                     if (
-                      event.key === 'ArrowRight' ||
-                      event.key === 'ArrowLeft'
+                      event.key !== 'ArrowRight' &&
+                      event.key !== 'ArrowLeft'
                     ) {
-                      event.preventDefault();
-                      const next = Math.max(
-                        0,
-                        Math.min(
-                          dimension.cards.length - 1,
-                          index + (event.key === 'ArrowRight' ? 1 : -1),
-                        ),
-                      );
-                      api
-                        ?.slideNodes()
-                        [next]?.querySelector('button')
-                        ?.focus({ preventScroll: true });
+                      return;
                     }
+                    event.preventDefault();
+                    const next = Math.max(
+                      0,
+                      Math.min(
+                        dimension.cards.length - 1,
+                        index + (event.key === 'ArrowRight' ? 1 : -1),
+                      ),
+                    );
+                    api
+                      ?.slideNodes()
+                      [next]?.querySelector<HTMLButtonElement>('button')
+                      ?.focus({ preventScroll: true });
                   }}
                   onClick={(event) => {
+                    if (pointer.current.moved) {
+                      pointer.current.moved = false;
+                      return;
+                    }
                     opener.current = event.currentTarget;
                     setDetail(card);
                   }}
@@ -226,7 +161,8 @@ export function IntroCarousel({
             </li>
           ))}
         </ol>
-      </div>
+      </fieldset>
+
       <div className={styles.controls}>
         <output aria-live="polite">
           {String(selected + 1).padStart(2, '0')} /{' '}
@@ -236,23 +172,23 @@ export function IntroCarousel({
           type="button"
           disabled={selected === 0}
           aria-label={locale === 'zh' ? '上一张卡片' : 'Previous card'}
-          onClick={() => api?.scrollPrev(reduced.current)}
+          onClick={() => api?.scrollPrev(prefersReducedMotion())}
         >
-          ←
+          <ArrowLeft size={18} strokeWidth={1.6} aria-hidden="true" />
         </button>
         <button
           type="button"
           disabled={selected === dimension.cards.length - 1}
           aria-label={locale === 'zh' ? '下一张卡片' : 'Next card'}
-          onClick={() => api?.scrollNext(reduced.current)}
+          onClick={() => api?.scrollNext(prefersReducedMotion())}
         >
-          →
+          <ArrowRight size={18} strokeWidth={1.6} aria-hidden="true" />
         </button>
       </div>
+
       <dialog
         ref={dialog}
         className={styles.detailDialog}
-        data-lenis-prevent
         aria-labelledby={`${dimension.id}-detail-title`}
         onCancel={(event) => {
           event.preventDefault();
@@ -260,7 +196,7 @@ export function IntroCarousel({
         }}
         onClose={() => setDetail(null)}
       >
-        {detail && (
+        {detail ? (
           <div className={styles.detailBody}>
             <div className={styles.detailTop}>
               <span>
@@ -271,19 +207,21 @@ export function IntroCarousel({
                 onClick={close}
                 aria-label={locale === 'zh' ? '关闭详情' : 'Close details'}
               >
-                ×
+                <X size={18} strokeWidth={1.6} aria-hidden="true" />
               </button>
             </div>
             {visual(detail, dimension.cards.indexOf(detail))}
             <h2 id={`${dimension.id}-detail-title`}>{detail.title}</h2>
             <p className={styles.detailLead}>{detail.copy}</p>
             <p>{dimension.description}</p>
-            {!detail.image && (
+            {!detail.image ? (
               <p className={styles.assetNote}>{detail.imageLabel}</p>
-            )}
-            {detail.status && <p className={styles.status}>{detail.status}</p>}
+            ) : null}
+            {detail.status ? (
+              <p className={styles.status}>{detail.status}</p>
+            ) : null}
           </div>
-        )}
+        ) : null}
       </dialog>
     </section>
   );

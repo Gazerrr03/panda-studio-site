@@ -19,8 +19,7 @@ export type Album = {
   format: string;
   note: string;
   tracks: string[];
-  cover: 'signal' | 'type' | 'cut';
-  placeholder?: boolean;
+  image?: StaticImageData;
 };
 
 export type IntroCard = {
@@ -57,7 +56,8 @@ export const introDimensions: IntroDimension[] = [
     number: '01',
     label: 'Meet Panda',
     title: 'A studio organised around projects.',
-    description: 'Meet the room first, then the people who make things inside it.',
+    description:
+      'Meet the room first, then the people who make things inside it.',
     cards: [
       {
         id: 'about-studio',
@@ -87,7 +87,8 @@ export const introDimensions: IntroDimension[] = [
     number: '02',
     label: 'Use the tools',
     title: 'Turn an idea into something you can touch.',
-    description: 'Shared facilities help every project move from a screen to a physical or spatial prototype.',
+    description:
+      'Shared facilities help every project move from a screen to a physical or spatial prototype.',
     cards: [
       {
         id: 'hardware-printer',
@@ -128,7 +129,8 @@ export const introDimensions: IntroDimension[] = [
     number: '03',
     label: 'Choose a direction',
     title: 'Four directions, one project-based path.',
-    description: 'Members explore through projects, then use competitions and hackathons as public tests of the result.',
+    description:
+      'Members explore through projects, then use competitions and hackathons as public tests of the result.',
     cards: [
       {
         id: 'research-hardware',
@@ -174,51 +176,76 @@ export const introDimensions: IntroDimension[] = [
   },
 ];
 
-export const sharedCapabilities = ['AI collaboration', '3D printing', 'Product thinking'];
+export const sharedCapabilities = [
+  'AI collaboration',
+  '3D printing',
+  'Product thinking',
+];
 
 export const albums: Album[] = [
   {
     id: 'record-001',
-    title: 'Untitled Record 01',
+    title: 'The shared table',
     label: 'PANDA / 001',
-    year: '20—',
-    format: 'Project story placeholder',
-    note: 'This sleeve is ready for one verified project story: the problem, the people in the room, the experiments, and what finally shipped.',
-    tracks: ['01 / The situation', '02 / The first rough demo', '03 / What changed', '04 / The final cut'],
-    cover: 'signal',
-    placeholder: true,
+    year: '2026',
+    format: 'Studio system',
+    note: 'A working room for people, tools, and unfinished ideas. We shaped the studio around the moments when a loose question becomes something testable.',
+    tracks: [
+      '01 / Gather the signal',
+      '02 / Make the first cut',
+      '03 / Put it on the table',
+      '04 / Keep what works',
+    ],
+    image: imageMeetingArea,
   },
   {
     id: 'record-002',
-    title: 'Untitled Record 02',
+    title: 'Small machines, big questions',
     label: 'PANDA / 002',
-    year: '20—',
-    format: 'Project story placeholder',
-    note: 'A second reusable slot for another piece of work. Replace the copy and cover without changing the archive interaction.',
-    tracks: ['01 / Brief', '02 / Friction', '03 / Collaboration', '04 / Release notes'],
-    cover: 'type',
-    placeholder: true,
+    year: '2026',
+    format: 'Making research',
+    note: 'We use desktop fabrication as a way to think with our hands: quick printed parts, imperfect tests, and a faster route from a hunch to a useful object.',
+    tracks: [
+      '01 / Start with a hunch',
+      '02 / Print the question',
+      '03 / Test the edges',
+      '04 / Share the result',
+    ],
+    image: image3DPrintingResults,
   },
   {
     id: 'record-003',
-    title: 'Live Session 03',
+    title: 'A robot in the room',
     label: 'PANDA / LIVE 003',
-    year: '20—',
-    format: 'Experiment placeholder',
-    note: 'Use this pressing for a smaller experiment, workshop, or collaboration that deserves to be heard without pretending it was a full product.',
-    tracks: ['01 / Participants', '02 / One-night rule', '03 / Unexpected noise', '04 / What remains'],
-    cover: 'cut',
-    placeholder: true,
+    year: '2026',
+    format: 'Open experiment',
+    note: 'A study of what happens when a small robotic arm becomes part of the studio vocabulary—less a finished product, more a new material to reason with.',
+    tracks: [
+      '01 / Give it a task',
+      '02 / Watch it fail',
+      '03 / Change the setup',
+      '04 / Leave a trace',
+    ],
+    image: imageArchitecturalModel,
   },
 ];
 
-type CardTranslation = Pick<IntroCard, 'kicker' | 'title' | 'copy' | 'imageLabel' | 'alt'> & {
+type CardTranslation = Pick<
+  IntroCard,
+  'kicker' | 'title' | 'copy' | 'imageLabel' | 'alt'
+> & {
   status?: string;
 };
-type DimensionTranslation = Pick<IntroDimension, 'label' | 'title' | 'description'> & {
+type DimensionTranslation = Pick<
+  IntroDimension,
+  'label' | 'title' | 'description'
+> & {
   cards: Record<string, CardTranslation>;
 };
-type AlbumTranslation = Pick<Album, 'title' | 'label' | 'format' | 'note' | 'tracks'>;
+type AlbumTranslation = Pick<
+  Album,
+  'title' | 'label' | 'format' | 'note' | 'tracks'
+>;
 type StudioTranslation = {
   dimensions: Record<string, DimensionTranslation>;
   sharedCapabilities: string[];
@@ -318,25 +345,40 @@ const chineseStudio: StudioTranslation = {
   sharedCapabilities: ['AI 协同', '3D 打印', '产品思维'],
   albums: {
     'record-001': {
-      title: '未命名唱片 01',
+      title: '共享的桌面',
       label: 'PANDA / 001',
-      format: '项目故事占位',
-      note: '这张唱片封套正在等待一段经过验证的项目故事：问题、在场的人、实验，以及最终发布的东西。',
-      tracks: ['01 / 起点', '02 / 第一版粗糙原型', '03 / 发生了什么变化', '04 / 最终剪辑'],
+      format: '工作室系统',
+      note: '一个容纳人、工具和未完成想法的工作空间。我们从那些让模糊问题变得可测试的时刻出发，重新组织了这个工作室。',
+      tracks: [
+        '01 / 收集信号',
+        '02 / 做第一刀',
+        '03 / 把它放上桌',
+        '04 / 留下有效的部分',
+      ],
     },
     'record-002': {
-      title: '未命名唱片 02',
+      title: '小机器，大问题',
       label: 'PANDA / 002',
-      format: '项目故事占位',
-      note: '为另一件工作预留的可复用位置。替换文案和封面，不必改变档案的互动方式。',
-      tracks: ['01 / Brief', '02 / 摩擦', '03 / 协作', '04 / 发布笔记'],
+      format: '制作研究',
+      note: '我们把桌面制造当作一种用手思考的方法：快速打印零件、并不完美的测试，以及从直觉到有用物件的更短路径。',
+      tracks: [
+        '01 / 从直觉开始',
+        '02 / 打印问题',
+        '03 / 测试边界',
+        '04 / 分享结果',
+      ],
     },
     'record-003': {
-      title: '现场录音 03',
+      title: '房间里的机器人',
       label: 'PANDA / LIVE 003',
-      format: '实验占位',
-      note: '把这张唱片留给更小的实验、工作坊或合作，不必假装它是一个完整产品。',
-      tracks: ['01 / 参与者', '02 / 一夜规则', '03 / 意外噪音', '04 / 留下来的东西'],
+      format: '开放实验',
+      note: '研究一只小型机械臂成为工作室语言的一部分之后会发生什么——它不是完成品，而是一种可以继续推理的新材料。',
+      tracks: [
+        '01 / 给它一个任务',
+        '02 / 看它失败',
+        '03 / 改变设置',
+        '04 / 留下一点痕迹',
+      ],
     },
   },
 };

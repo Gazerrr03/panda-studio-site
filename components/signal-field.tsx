@@ -1,9 +1,17 @@
 'use client';
 
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import {
+  BufferAttribute,
+  BufferGeometry,
+  NormalBlending,
+  PerspectiveCamera,
+  Points,
+  Scene,
+  ShaderMaterial,
+  WebGLRenderer,
+} from 'three';
 import { useTheme } from '@/components/theme-switcher';
-import * as THREE from 'three';
 
 const vertexShader = /* glsl */ `
   uniform float uTime;
@@ -107,106 +115,170 @@ const fragmentShader = /* glsl */ `
   }
 `;
 
-function PointSurface() {
-  const theme = useTheme();
-  const material = useRef<THREE.ShaderMaterial>(null);
-  const { camera, invalidate, size } = useThree();
-  const compact = size.width < 768;
-  const geometry = useMemo(() => {
-    // The field now remains visible for the whole visit; bound mobile GPU work.
-    const columns = compact ? 180 : 420;
-    const rows = compact ? 108 : 252;
-    const positions = new Float32Array(columns * rows * 3);
-    const seeds = new Float32Array(columns * rows);
-    let vertex = 0;
+function createGeometry(compact: boolean) {
+  const columns = compact ? 180 : 420;
+  const rows = compact ? 108 : 252;
+  const positions = new Float32Array(columns * rows * 3);
+  const seeds = new Float32Array(columns * rows);
+  let vertex = 0;
 
-    for (let row = 0; row < rows; row += 1) {
-      for (let column = 0; column < columns; column += 1) {
-        const offset = vertex * 3;
-        positions[offset] = (column / (columns - 1) - 0.5) * 18.4;
-        positions[offset + 1] = 0;
-        positions[offset + 2] = -6.2 + (row / (rows - 1)) * 9.6;
-        seeds[vertex] = Math.abs(Math.sin(vertex * 12.9898) * 43758.5453) % 1;
-        vertex += 1;
-      }
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const offset = vertex * 3;
+      positions[offset] = (column / (columns - 1) - 0.5) * 18.4;
+      positions[offset + 1] = 0;
+      positions[offset + 2] = -6.2 + (row / (rows - 1)) * 9.6;
+      seeds[vertex] = Math.abs(Math.sin(vertex * 12.9898) * 43758.5453) % 1;
+      vertex += 1;
     }
+  }
 
-    const points = new THREE.BufferGeometry();
-    points.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    points.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
-    return points;
-  }, [compact]);
-
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      invalidate();
-      return;
-    }
-    let animationFrame = 0;
-    let lastFrame = 0;
-    const tick = (time: number) => {
-      if (time - lastFrame >= 1000 / 30) {
-        lastFrame = time;
-        invalidate();
-      }
-      animationFrame = window.requestAnimationFrame(tick);
-    };
-    animationFrame = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, [invalidate]);
-
-  useFrame((state) => {
-    camera.position.set(0, size.width < 760 ? 4.9 : 4.35, size.width < 760 ? 9.8 : 8.0);
-    camera.lookAt(0, size.width < 760 ? -0.45 : -0.25, 0);
-    if (material.current) material.current.uniforms.uTime.value = state.clock.elapsedTime;
-  });
-
-  return (
-    <points
-      geometry={geometry}
-      position={[0, size.width < 760 ? -0.6 : -0.95, 0]}
-      frustumCulled={false}
-    >
-      <shaderMaterial
-        ref={material}
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        transparent
-        depthWrite={false}
-        blending={THREE.NormalBlending}
-        uniforms={{
-          uTime: { value: 0 },
-          uLightTheme: { value: theme === 'light' ? 1 : 0 },
-          uMotion: {
-            value:
-              typeof window !== 'undefined' &&
-              window.matchMedia('(prefers-reduced-motion: reduce)').matches
-                ? 0
-                : compact
-                  ? 0.72
-                  : 1,
-          },
-          uPointScale: { value: compact ? 15 : 18 },
-        }}
-      />
-    </points>
-  );
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new BufferAttribute(positions, 3));
+  geometry.setAttribute('aSeed', new BufferAttribute(seeds, 1));
+  return geometry;
 }
+
+type SignalRuntime = {
+  camera: PerspectiveCamera;
+  material: ShaderMaterial;
+  renderer: WebGLRenderer;
+  scene: Scene;
+};
 
 export function SignalField() {
   const theme = useTheme();
+  const host = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const runtime = useRef<SignalRuntime | null>(null);
+
+  useEffect(() => {
+    const container = host.current;
+    const canvasElement = canvas.current;
+    if (!container || !canvasElement) return;
+
+    let renderer: WebGLRenderer;
+    try {
+      renderer = new WebGLRenderer({
+        canvas: canvasElement,
+        alpha: false,
+        antialias: false,
+        powerPreference: 'high-performance',
+      });
+    } catch {
+      container.classList.add('signal-field-fallback');
+      return;
+    }
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.1));
+    const scene = new Scene();
+    const camera = new PerspectiveCamera(42, 1, 0.1, 30);
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let compact = container.clientWidth < 768;
+    let geometry = createGeometry(compact);
+    const material = new ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+      depthWrite: false,
+      blending: NormalBlending,
+      uniforms: {
+        uTime: { value: 0 },
+        uLightTheme: {
+          value: document.documentElement.dataset.theme === 'light' ? 1 : 0,
+        },
+        uMotion: { value: motionQuery.matches ? 0 : compact ? 0.72 : 1 },
+        uPointScale: { value: compact ? 15 : 18 },
+      },
+    });
+    const points = new Points(geometry, material);
+    points.frustumCulled = false;
+    scene.add(points);
+    runtime.current = { camera, material, renderer, scene };
+
+    const draw = () => renderer.render(scene, camera);
+    const resize = () => {
+      const width = Math.max(1, container.clientWidth);
+      const height = Math.max(1, container.clientHeight);
+      const nextCompact = width < 768;
+      if (nextCompact !== compact) {
+        compact = nextCompact;
+        geometry.dispose();
+        geometry = createGeometry(compact);
+        points.geometry = geometry;
+      }
+
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.position.set(0, compact ? 4.9 : 4.35, compact ? 9.8 : 8);
+      camera.lookAt(0, compact ? -0.45 : -0.25, 0);
+      camera.updateProjectionMatrix();
+      points.position.set(0, compact ? -0.6 : -0.95, 0);
+      material.uniforms.uMotion.value = motionQuery.matches
+        ? 0
+        : compact
+          ? 0.72
+          : 1;
+      material.uniforms.uPointScale.value = compact ? 15 : 18;
+      draw();
+    };
+
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(container);
+    resize();
+
+    let animationFrame = 0;
+    let lastFrame = 0;
+    const startedAt = performance.now();
+    const animate = (time: number) => {
+      animationFrame = window.requestAnimationFrame(animate);
+      if (time - lastFrame < 1000 / 30) return;
+      lastFrame = time;
+      material.uniforms.uTime.value = (time - startedAt) / 1000;
+      draw();
+    };
+
+    const syncMotion = () => {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+      material.uniforms.uMotion.value = motionQuery.matches
+        ? 0
+        : compact
+          ? 0.72
+          : 1;
+      if (motionQuery.matches) {
+        material.uniforms.uTime.value = 0;
+        draw();
+      } else {
+        animationFrame = window.requestAnimationFrame(animate);
+      }
+    };
+
+    motionQuery.addEventListener('change', syncMotion);
+    syncMotion();
+
+    return () => {
+      runtime.current = null;
+      window.cancelAnimationFrame(animationFrame);
+      motionQuery.removeEventListener('change', syncMotion);
+      resizeObserver.disconnect();
+      geometry.dispose();
+      material.dispose();
+      renderer.dispose();
+    };
+  }, []);
+
+  useEffect(() => {
+    const active = runtime.current;
+    if (!active) return;
+    active.material.uniforms.uLightTheme.value = theme === 'light' ? 1 : 0;
+    active.renderer.setClearColor(theme === 'light' ? '#f5f4ef' : '#111210');
+    active.renderer.render(active.scene, active.camera);
+  }, [theme]);
+
   return (
-    <Canvas
-      className="signal-field"
-      dpr={[1, 1.1]}
-      frameloop="demand"
-      fallback={<div className="signal-field signal-field-fallback" aria-hidden="true" />}
-      camera={{ position: [0, 4.35, 8], fov: 42, near: 0.1, far: 30 }}
-      gl={{ alpha: false, antialias: false, powerPreference: 'high-performance' }}
-      aria-hidden="true"
-    >
-      <color attach="background" args={[theme === 'light' ? '#f5f4ef' : '#111210']} />
-      <PointSurface />
-    </Canvas>
+    <div ref={host} className="signal-field" aria-hidden="true">
+      <canvas ref={canvas} />
+    </div>
   );
 }
