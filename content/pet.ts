@@ -56,22 +56,43 @@ const petCopy = {
         question: 'Who are you?',
         answer:
           'Panda Studio is an independent creative studio for people who do not fit neatly into the usual rankings. We make strange, useful things together.',
-        keywords: ['who are you', 'who is panda', 'panda studio', 'studio', 'identity'],
+        keywords: [
+          'who are you',
+          'who is panda',
+          'panda studio',
+          'studio',
+          'identity',
+        ],
       },
       {
         id: 'work',
         question: 'What do you make?',
         answer:
-          'We turn unclear ideas into visual languages, interactions, prototypes, and other things people can actually use. The records area will hold the work as project stories.',
-        keywords: ['what do you make', 'what do you do', 'make', 'work', 'projects', '做什么'],
+          'We turn unclear ideas into visual languages, interactions, prototypes, and other things people can actually use. The records area holds that work as project objects.',
+        keywords: [
+          'what do you make',
+          'what do you do',
+          'make',
+          'work',
+          'projects',
+          '做什么',
+        ],
         link: { href: '#records', label: 'Open the records' },
       },
       {
         id: 'records',
         question: 'What is in the records?',
         answer:
-          'The records are album-like sleeves for project stories: the situation, the rough demo, what changed, and the final cut. Some entries are still marked as placeholders.',
-        keywords: ['records', 'projects', 'albums', 'portfolio', '作品', '唱片', '档案'],
+          'The records are project objects: each one keeps the situation, the rough demo, what changed, and the result together. Some entries still carry notes that need verification.',
+        keywords: [
+          'records',
+          'projects',
+          'albums',
+          'portfolio',
+          '作品',
+          '唱片',
+          '档案',
+        ],
         link: { href: '#records', label: 'Go to the records' },
       },
       {
@@ -79,14 +100,33 @@ const petCopy = {
         question: 'Why is this site built like a room?',
         answer:
           'The introduction moves through three acts: enter the room, check the gear, and tune the signal. It treats the studio as a place where people, tools, and ideas meet—not just as a list of services.',
-        keywords: ['why this site', 'why a room', 'design', 'room', 'three acts', '网页', '网站', '房间'],
+        keywords: [
+          'why this site',
+          'why a room',
+          'design',
+          'room',
+          'three acts',
+          '网页',
+          '网站',
+          '房间',
+        ],
       },
       {
         id: 'gear',
         question: 'What are the tools for?',
         answer:
-          'The 3D printer, laser engraver, and workbench are introduced as instruments that help ideas become physical. Their detailed stories are still placeholders on this page.',
-        keywords: ['tools', 'gear', '3d printer', 'laser', 'workbench', '设备', '硬件', '打印机', '雕刻机'],
+          'The 3D printer, laser engraver, and workbench are introduced as instruments that help ideas become physical. Some equipment details still need verification on this page.',
+        keywords: [
+          'tools',
+          'gear',
+          '3d printer',
+          'laser',
+          'workbench',
+          '设备',
+          '硬件',
+          '打印机',
+          '雕刻机',
+        ],
       },
     ],
   },
@@ -112,13 +152,20 @@ const petCopy = {
         question: '你们是谁？',
         answer:
           'Panda Studio 是一个独立创意工作室，聚集那些无法被常规排名准确归类的人，然后一起做出奇怪而有用的东西。',
-        keywords: ['你们是谁', '你是谁', 'panda studio', '工作室', '介绍', '身份'],
+        keywords: [
+          '你们是谁',
+          '你是谁',
+          'panda studio',
+          '工作室',
+          '介绍',
+          '身份',
+        ],
       },
       {
         id: 'work',
         question: '你们做什么？',
         answer:
-          '我们把模糊的感受和想法变成视觉语言、交互、原型，以及真正能被人使用的东西。作品区会把这些工作写成一张张项目唱片。',
+          '我们把模糊的感受和想法变成视觉语言、交互、原型，以及真正能被人使用的东西。作品区会把这些工作收进一个个项目对象。',
         keywords: ['你们做什么', '做什么', '做啥', '工作', '项目', '创作'],
         link: { href: '#records', label: '去看作品' },
       },
@@ -126,7 +173,7 @@ const petCopy = {
         id: 'records',
         question: '作品区里有什么？',
         answer:
-          '作品区把项目做成唱片封套：从问题、第一版粗糙原型，到发生了什么变化，再到最终剪辑。目前其中一些条目仍然是占位内容。',
+          '作品区把项目整理成一个个对象：从问题、第一版粗糙原型，到发生了什么变化，再到最终结果。目前其中一些条目仍带有待核实的说明。',
         keywords: ['作品', '作品区', '唱片', '档案', '项目故事', '案例'],
         link: { href: '#records', label: '去看作品区' },
       },
@@ -135,14 +182,31 @@ const petCopy = {
         question: '为什么网页像一间房？',
         answer:
           '介绍部分分成三幕：进入这间房、看看这些装备、调好信号。它把工作室理解成一个让人、工具和想法相遇的地方，而不只是一串服务列表。',
-        keywords: ['为什么网页', '为什么网站', '网页设计', '网站设计', '房间', '三幕', '怎么设计'],
+        keywords: [
+          '为什么网页',
+          '为什么网站',
+          '网页设计',
+          '网站设计',
+          '房间',
+          '三幕',
+          '怎么设计',
+        ],
       },
       {
         id: 'gear',
         question: '这些设备是做什么的？',
         answer:
-          '3D 打印机、激光雕刻机和工作台被当作让想法变得具体的乐器。它们各自的详细故事，目前还是页面里的占位内容。',
-        keywords: ['设备', '硬件', '3d打印机', '打印机', '激光雕刻机', '雕刻机', '工作台', '装备'],
+          '3D 打印机、激光雕刻机和工作台被当作让想法变得具体的工具。它们各自的详细资料，目前还有待核实。',
+        keywords: [
+          '设备',
+          '硬件',
+          '3d打印机',
+          '打印机',
+          '激光雕刻机',
+          '雕刻机',
+          '工作台',
+          '装备',
+        ],
       },
     ],
   },
@@ -156,12 +220,17 @@ function normalizeQuestion(value: string): string {
   return value.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
 }
 
-export function resolvePetAnswer(copy: PetCopy, question: string): PetAnswer | null {
+export function resolvePetAnswer(
+  copy: PetCopy,
+  question: string,
+): PetAnswer | null {
   const normalizedQuestion = normalizeQuestion(question);
 
   return (
     copy.answers.find((answer) =>
-      answer.keywords.some((keyword) => normalizedQuestion.includes(normalizeQuestion(keyword))),
+      answer.keywords.some((keyword) =>
+        normalizedQuestion.includes(normalizeQuestion(keyword)),
+      ),
     ) ?? null
   );
 }
