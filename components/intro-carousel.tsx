@@ -209,11 +209,6 @@ export function IntroCarousel({
         </ol>
       </div>
       <div className={styles.controls}>
-        <span className={styles.carouselHint}>
-          {locale === 'zh'
-            ? '横向拖动探索 · 点击查看详情'
-            : 'Drag to explore · Click for details'}
-        </span>
         <output aria-live="polite">
           {String(selected + 1).padStart(2, '0')} /{' '}
           {String(dimension.cards.length).padStart(2, '0')}

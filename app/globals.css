@@ -8,6 +8,17 @@
   --body-copy: #c5c5bf;
   --input-fill: rgba(0, 0, 0, .16);
   --shadow: rgba(0, 0, 0, .28);
+  --glass-fill-alpha: 0.5;
+  --glass-blur: 20px;
+  --glass-saturation: 1.25;
+  --glass-contrast: 1.04;
+  --glass-border-alpha: 0.22;
+  --glass-highlight-alpha: 0.18;
+  --glass-sheen-alpha: 0.26;
+  --glass-tint-alpha: 0.1;
+  --glass-control-alpha: 0.6;
+  --glass-dialog-alpha: 0.92;
+  --glass-dialog-blur: 24px;
   --wordmark-filter: invert(1);
   --ink: #ecece8;
   --muted: #9b9b96;

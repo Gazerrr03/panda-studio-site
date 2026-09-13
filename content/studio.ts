@@ -1,4 +1,15 @@
+import type { StaticImageData } from 'next/image';
 import type { Locale } from './i18n';
+
+import image3DPrintingResults from '../images/3D printing results.jpeg';
+import imageArchitecturalModel from '../images/Architectural model.jpeg';
+import imageLaserEngraver from '../images/Laser engraving machine.jpeg';
+import imageMeetingArea from '../images/Meeting area.jpeg';
+import imageMetaQuest from '../images/Meta Quest.jpeg';
+import imageStudioEnvironment2 from '../images/Studio Environment 2.jpeg';
+import imageStudioEnvironment from '../images/Studio environment.jpeg';
+import imagePrinters from '../images/Weixin Image_20260912174320_82_1948.jpg';
+import imageSticker from '../images/sticker.png';
 
 export type Album = {
   id: string;
@@ -18,7 +29,7 @@ export type IntroCard = {
   title: string;
   copy: string;
   status?: string;
-  image?: string;
+  image?: StaticImageData | string;
   imageLabel: string;
   imageTone: 'room' | 'gear' | 'signal' | 'ember' | 'steel';
   alt: string;
@@ -53,9 +64,10 @@ export const introDimensions: IntroDimension[] = [
         kicker: 'ABOUT / 01',
         title: 'Studio introduction',
         copy: 'Start with a real problem, make a testable prototype, then validate it through competitions and hackathons.',
-        imageLabel: 'IMAGE PLACEHOLDER / STUDIO VIEW',
+        image: imageMeetingArea,
+        imageLabel: 'PHOTO / MEETING AREA',
         imageTone: 'room',
-        alt: 'Placeholder for a photograph of the studio space',
+        alt: 'Meeting area inside Panda Studio',
       },
       {
         id: 'about-members',
@@ -63,9 +75,10 @@ export const introDimensions: IntroDimension[] = [
         title: 'Member introduction',
         copy: 'People from different disciplines learn, form teams, and bring their own tools to the same table.',
         status: 'MEMBER DETAILS TO ADD',
-        imageLabel: 'IMAGE PLACEHOLDER / MEMBERS',
+        image: imageStudioEnvironment,
+        imageLabel: 'PHOTO / STUDIO ENVIRONMENT',
         imageTone: 'steel',
-        alt: 'Placeholder for a group portrait of Panda Studio members',
+        alt: 'Panda Studio workspace with a shared display and work tables',
       },
     ],
   },
@@ -81,9 +94,10 @@ export const introDimensions: IntroDimension[] = [
         kicker: 'HARDWARE / 01',
         title: '3D printer',
         copy: 'Turn a digital model into a physical object quickly—a prototyping tool shared by every direction.',
-        imageLabel: 'IMAGE PLACEHOLDER / 3D PRINTER',
+        image: imagePrinters,
+        imageLabel: 'PHOTO / 3D PRINTERS',
         imageTone: 'gear',
-        alt: 'Placeholder for a photograph of a 3D printer',
+        alt: 'Several 3D printers in the studio',
       },
       {
         id: 'hardware-laser',
@@ -91,9 +105,10 @@ export const introDimensions: IntroDimension[] = [
         title: 'Laser engraver',
         copy: 'Cut, engrave, and test sheet materials quickly.',
         status: 'SPECS TO VERIFY',
-        imageLabel: 'IMAGE PLACEHOLDER / LASER ENGRAVER',
+        image: imageLaserEngraver,
+        imageLabel: 'PHOTO / LASER ENGRAVING MACHINE',
         imageTone: 'ember',
-        alt: 'Placeholder for a photograph of a laser engraving machine',
+        alt: 'Laser engraving machine in the studio',
       },
       {
         id: 'hardware-mr',
@@ -101,9 +116,10 @@ export const introDimensions: IntroDimension[] = [
         title: 'MR devices',
         copy: 'Build mixed-reality experiences and spatial interaction prototypes.',
         status: 'SPECS TO VERIFY',
-        imageLabel: 'IMAGE PLACEHOLDER / MR DEVICES',
+        image: imageMetaQuest,
+        imageLabel: 'PHOTO / META QUEST',
         imageTone: 'signal',
-        alt: 'Placeholder for a photograph of mixed-reality devices',
+        alt: 'Meta Quest headset and related equipment on a work table',
       },
     ],
   },
@@ -119,36 +135,40 @@ export const introDimensions: IntroDimension[] = [
         kicker: 'RESEARCH / 01',
         title: 'Small hardware',
         copy: 'Combine PCBs, sensors, and 3D-printed parts into compact physical prototypes.',
-        imageLabel: 'DIRECTION / SMALL HARDWARE',
+        image: image3DPrintingResults,
+        imageLabel: 'PHOTO / 3D PRINTING RESULTS',
         imageTone: 'gear',
-        alt: 'Abstract placeholder representing a small hardware prototype',
+        alt: '3D printed prototypes and filament on a work table',
       },
       {
         id: 'research-gamification',
         kicker: 'RESEARCH / 02',
         title: 'Gamification',
         copy: 'Not simply making games—use game mechanics to help people understand or solve a problem.',
-        imageLabel: 'DIRECTION / GAMIFICATION',
+        image: imageSticker,
+        imageLabel: 'PHOTO / PANDA STICKER SHEET',
         imageTone: 'ember',
-        alt: 'Abstract placeholder representing a gamified learning experience',
+        alt: 'Panda Studio sticker sheet with illustrated characters',
       },
       {
         id: 'research-campus',
         kicker: 'RESEARCH / 03',
         title: 'Campus applications',
         copy: 'Start with real campus problems and connect small apps to channels, identity, and activities.',
-        imageLabel: 'DIRECTION / CAMPUS APPS',
+        image: imageStudioEnvironment2,
+        imageLabel: 'PHOTO / STUDIO ENVIRONMENT',
         imageTone: 'signal',
-        alt: 'Abstract placeholder representing a campus application',
+        alt: 'Shared studio environment with workstations and tables',
       },
       {
         id: 'research-robotics',
         kicker: 'RESEARCH / 04',
         title: 'Robotic arms',
         copy: 'Start with desktop robotic arms to explore grasping, making, and architecture-related tasks.',
-        imageLabel: 'DIRECTION / ROBOTIC ARMS',
+        image: imageArchitecturalModel,
+        imageLabel: 'PHOTO / ARCHITECTURAL MODEL',
         imageTone: 'steel',
-        alt: 'Abstract placeholder representing a robotic arm experiment',
+        alt: 'Architectural models displayed in a studio',
       },
     ],
   },
@@ -216,16 +236,16 @@ const chineseStudio: StudioTranslation = {
           kicker: '介绍 / 01',
           title: '工作室介绍',
           copy: '从真实问题出发，把想法做成原型，再通过竞赛与黑客松验证。',
-          imageLabel: '图片占位 / 工作室视角',
-          alt: '工作室空间照片的占位图',
+          imageLabel: '照片 / 会议区',
+          alt: 'Panda Studio 内的会议区',
         },
         'about-members': {
           kicker: '介绍 / 02',
           title: '成员介绍',
           copy: '不同专业的成员在这里学习、组队，并把各自的工具带到同一张桌上。',
           status: '成员信息待补',
-          imageLabel: '图片占位 / 成员合影',
-          alt: 'Panda Studio 成员合影的占位图',
+          imageLabel: '照片 / 工作室环境',
+          alt: 'Panda Studio 的共享工作区，包含显示屏和工作桌',
         },
       },
     },
@@ -238,24 +258,24 @@ const chineseStudio: StudioTranslation = {
           kicker: '硬件 / 01',
           title: '3D 打印机',
           copy: '把数字模型快速变成实体，是所有方向共用的原型工具。',
-          imageLabel: '图片占位 / 3D 打印机',
-          alt: '3D 打印机照片的占位图',
+          imageLabel: '照片 / 3D 打印机',
+          alt: '工作室内的多台 3D 打印机',
         },
         'hardware-laser': {
           kicker: '硬件 / 02',
           title: '激光雕刻机',
           copy: '用于板材切割、雕刻和快速材料测试。',
           status: '参数待核实',
-          imageLabel: '图片占位 / 激光雕刻机',
-          alt: '激光雕刻机照片的占位图',
+          imageLabel: '照片 / 激光雕刻机',
+          alt: '工作室内的激光雕刻机',
         },
         'hardware-mr': {
           kicker: '硬件 / 03',
           title: 'MR 设备',
           copy: '用于混合现实体验和空间交互原型。',
           status: '参数待核实',
-          imageLabel: '图片占位 / MR 设备',
-          alt: '混合现实设备照片的占位图',
+          imageLabel: '照片 / Meta Quest',
+          alt: '工作桌上的 Meta Quest 头显和相关设备',
         },
       },
     },
@@ -268,29 +288,29 @@ const chineseStudio: StudioTranslation = {
           kicker: '研究 / 01',
           title: '小硬件',
           copy: '结合 PCB、传感器和 3D 打印，快速完成小型实体产品原型。',
-          imageLabel: '研究方向 / 小硬件',
-          alt: '代表小硬件原型的抽象占位图',
+          imageLabel: '照片 / 3D 打印成果',
+          alt: '工作桌上的 3D 打印原型和耗材',
         },
         'research-gamification': {
           kicker: '研究 / 02',
           title: '游戏化',
           copy: '不是单纯做游戏，而是用游戏机制帮助人理解或解决问题。',
-          imageLabel: '研究方向 / 游戏化',
-          alt: '代表游戏化学习体验的抽象占位图',
+          imageLabel: '照片 / Panda 贴纸',
+          alt: '印有 Panda Studio 插画角色的贴纸页',
         },
         'research-campus': {
           kicker: '研究 / 03',
           title: '校园应用',
           copy: '从校园真实问题出发，用小应用连接校内渠道、认证与活动。',
-          imageLabel: '研究方向 / 校园应用',
-          alt: '代表校园应用的抽象占位图',
+          imageLabel: '照片 / 工作室环境',
+          alt: '包含工作台和工作站的共享工作室环境',
         },
         'research-robotics': {
           kicker: '研究 / 04',
           title: '机械臂',
           copy: '从桌面机械臂入手，探索抓取、制作与建筑相关任务。',
-          imageLabel: '研究方向 / 机械臂',
-          alt: '代表机械臂实验的抽象占位图',
+          imageLabel: '照片 / 建筑模型',
+          alt: '工作室内展示的建筑模型',
         },
       },
     },
