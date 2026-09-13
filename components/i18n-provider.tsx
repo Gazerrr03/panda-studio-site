@@ -1,6 +1,13 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useSyncExternalStore,
+} from 'react';
 import { getSiteCopy, type Locale } from '@/content/i18n';
 import { getStudioContent, type StudioContent } from '@/content/studio';
 
@@ -37,8 +44,14 @@ type I18nContextValue = {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-export function I18nProvider({ children }: Readonly<{ children: React.ReactNode }>) {
-  const locale = useSyncExternalStore(subscribeToLocale, getStoredLocale, getServerLocale);
+export function I18nProvider({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const locale = useSyncExternalStore(
+    subscribeToLocale,
+    getStoredLocale,
+    getServerLocale,
+  );
   const setLocale = useCallback((nextLocale: Locale) => {
     window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
     window.dispatchEvent(new Event(LOCALE_CHANGE_EVENT));

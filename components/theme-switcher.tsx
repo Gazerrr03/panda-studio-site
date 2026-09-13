@@ -48,19 +48,35 @@ export function ThemeSwitcher() {
   const theme = useTheme();
   const { locale } = useI18n();
   const label = locale === 'zh' ? '浅色模式' : 'Light mode';
-  const hint = locale === 'zh'
-    ? `切换为${theme === 'light' ? '深' : '浅'}色模式`
-    : `Switch to ${theme === 'light' ? 'dark' : 'light'} mode`;
+  const hint =
+    locale === 'zh'
+      ? `切换为${theme === 'light' ? '深' : '浅'}色模式`
+      : `Switch to ${theme === 'light' ? 'dark' : 'light'} mode`;
 
   return (
-    <button type="button" className="theme-switcher" aria-label={label}
-      aria-pressed={theme === 'light'} title={hint}
+    <button
+      type="button"
+      className="theme-switcher"
+      aria-label={label}
+      aria-pressed={theme === 'light'}
+      title={hint}
       onClick={() => {
         const next = theme === 'light' ? 'dark' : 'light';
-        try { localStorage.setItem(key, next); } catch { /* Keep switching in memory. */ }
+        try {
+          localStorage.setItem(key, next);
+        } catch {
+          /* Keep switching in memory. */
+        }
         applyTheme(next);
-      }}>
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+      }}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        fill="none"
+        aria-hidden="true"
+      >
         <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.5" />
         <path d="M12 4a8 8 0 0 0 0 16Z" fill="currentColor" />
       </svg>

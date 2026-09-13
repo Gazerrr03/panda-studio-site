@@ -21,7 +21,12 @@ export function PandaPet({ docked }: PandaPetProps) {
 
   useEffect(() => {
     // On phones, opening shortcuts should not immediately open the keyboard.
-    if (panelOpen && window.matchMedia('(min-width: 768px) and (hover: hover) and (pointer: fine)').matches) {
+    if (
+      panelOpen &&
+      window.matchMedia(
+        '(min-width: 768px) and (hover: hover) and (pointer: fine)',
+      ).matches
+    ) {
       inputRef.current?.focus({ preventScroll: true });
     }
   }, [panelOpen]);
@@ -96,7 +101,9 @@ export function PandaPet({ docked }: PandaPetProps) {
         >
           <div className="panda-pet__popover-header">
             <div>
-              <p className="panda-pet__greeting" id="panda-pet-greeting">{copy.greeting}</p>
+              <p className="panda-pet__greeting" id="panda-pet-greeting">
+                {copy.greeting}
+              </p>
             </div>
             <button
               className="panda-pet__close"
@@ -109,12 +116,17 @@ export function PandaPet({ docked }: PandaPetProps) {
           </div>
 
           <div className="panda-pet__section">
-            <nav className="panda-pet__shortcuts" aria-label={copy.shortcutsLabel}>
+            <nav
+              className="panda-pet__shortcuts"
+              aria-label={copy.shortcutsLabel}
+            >
               <a href="#top" onClick={() => setOpen(false)}>
-                <span>01</span>{copy.shortcuts.home}
+                <span>01</span>
+                {copy.shortcuts.home}
               </a>
               <a href="#records" onClick={() => setOpen(false)}>
-                <span>02</span>{copy.shortcuts.records}
+                <span>02</span>
+                {copy.shortcuts.records}
               </a>
             </nav>
           </div>
@@ -132,7 +144,11 @@ export function PandaPet({ docked }: PandaPetProps) {
               ))}
             </div>
 
-            <form className="panda-pet__form" aria-label={copy.askLabel} onSubmit={handleSubmit}>
+            <form
+              className="panda-pet__form"
+              aria-label={copy.askLabel}
+              onSubmit={handleSubmit}
+            >
               <label htmlFor="panda-pet-question">{copy.inputLabel}</label>
               <div className="panda-pet__input-row">
                 <input
@@ -149,7 +165,11 @@ export function PandaPet({ docked }: PandaPetProps) {
               </div>
             </form>
 
-            {notice && <p className="panda-pet__notice" role="alert">{notice}</p>}
+            {notice && (
+              <p className="panda-pet__notice" role="alert">
+                {notice}
+              </p>
+            )}
 
             {askedQuestion && (
               <output className="panda-pet__answer" aria-live="polite">

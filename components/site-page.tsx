@@ -23,7 +23,9 @@ export function SitePage() {
   useEffect(() => {
     const handlePetScroll = () => {
       const nextDocked = window.scrollY > 48;
-      setPetDocked((current) => current === nextDocked ? current : nextDocked);
+      setPetDocked((current) =>
+        current === nextDocked ? current : nextDocked,
+      );
     };
 
     handlePetScroll();
@@ -95,7 +97,9 @@ export function SitePage() {
 
   return (
     <main data-locale={locale}>
-      <div className="global-signal" aria-hidden="true"><SignalFieldLoader /></div>
+      <div className="global-signal" aria-hidden="true">
+        <SignalFieldLoader />
+      </div>
       <header
         className={`site-header page-shell${headerVisible ? '' : ' site-header--hidden'}`}
       >
@@ -115,14 +119,16 @@ export function SitePage() {
           <nav aria-label={copy.navigation.primary}>
             <a href="#records">{copy.navigation.records}</a>
           </nav>
-          <div className="appearance-tools"><LanguageSwitcher /><ThemeSwitcher /></div>
+          <div className="appearance-tools">
+            <LanguageSwitcher />
+            <ThemeSwitcher />
+          </div>
         </div>
       </header>
 
       <PandaPet key={locale} docked={petDocked} />
 
       <section ref={homeRef} className="hero" id="top" data-locale={locale}>
-
         <div className="hero-copy page-shell">
           <p className="eyebrow">{copy.hero.eyebrow}</p>
           <h1>

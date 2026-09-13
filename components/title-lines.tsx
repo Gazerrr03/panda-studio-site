@@ -5,7 +5,10 @@ type TitleLinesProps = {
   className?: string;
 };
 
-export function TitleLines({ lines, className = 'title-line' }: TitleLinesProps) {
+export function TitleLines({
+  lines,
+  className = 'title-line',
+}: TitleLinesProps) {
   return lines.map((line, index) => (
     <Fragment key={`${index}-${line}`}>
       <span className={className}>{line}</span>
