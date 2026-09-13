@@ -17,7 +17,7 @@ export function IntroCarousel({
   const [viewport, api] = useEmblaCarousel({
     align: 'center',
     containScroll: false,
-    duration: 32,
+    duration: 22,
     loop: false,
   });
   const [selected, setSelected] = useState(0);
@@ -32,7 +32,8 @@ export function IntroCarousel({
     let origin = { x: 0, y: 0 };
     let dragged = false;
     let horizontal = 0;
-    let lastStep = 0;
+    let wheelConsumed = false;
+    let wheelReset: number | undefined;
     const down = (event: PointerEvent) => {
       origin = { x: event.clientX, y: event.clientY };
       dragged = false;
@@ -50,16 +51,27 @@ export function IntroCarousel({
       dragged = false;
     };
     const wheel = (event: WheelEvent) => {
-      if (event.ctrlKey || Math.abs(event.deltaX) <= Math.abs(event.deltaY))
-        return;
+      if (event.ctrlKey) return;
+      const delta =
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+          ? event.deltaX
+          : event.shiftKey
+            ? event.deltaY
+            : 0;
+      if (!delta) return;
       event.preventDefault();
-      if (performance.now() - lastStep < 420) return;
-      horizontal += event.deltaX * (event.deltaMode === 1 ? 16 : 1);
-      if (Math.abs(horizontal) < 36) return;
+      window.clearTimeout(wheelReset);
+      wheelReset = window.setTimeout(() => {
+        horizontal = 0;
+        wheelConsumed = false;
+      }, 110);
+      if (wheelConsumed) return;
+      horizontal += delta * (event.deltaMode === 1 ? 16 : 1);
+      if (Math.abs(horizontal) < 28) return;
       if (horizontal > 0) api.scrollNext(reduced.current);
       else api.scrollPrev(reduced.current);
       horizontal = 0;
-      lastStep = performance.now();
+      wheelConsumed = true;
     };
     node.addEventListener('pointerdown', down, true);
     node.addEventListener('pointermove', move, true);
@@ -70,6 +82,7 @@ export function IntroCarousel({
       node.removeEventListener('pointermove', move, true);
       node.removeEventListener('click', click, true);
       node.removeEventListener('wheel', wheel);
+      window.clearTimeout(wheelReset);
     };
   }, [api]);
 
@@ -88,10 +101,11 @@ export function IntroCarousel({
     const sync = () => setSelected(api.selectedScrollSnap());
     const paint = () => {
       const progress = api.scrollProgress();
+      const snaps = api.scrollSnapList();
       api.slideNodes().forEach((slide, index) => {
         const distance = Math.min(
           1,
-          Math.abs(api.scrollSnapList()[index] - progress) *
+          Math.abs(snaps[index] - progress) *
             Math.max(1, dimension.cards.length - 1),
         );
         slide.style.setProperty('--focus-scale', String(1 - distance * 0.08));
@@ -153,7 +167,12 @@ export function IntroCarousel({
   );
 
   return (
-    <div className={styles.carousel} aria-label={dimension.label}>
+    <section
+      className={styles.carousel}
+      data-dimension={dimension.id}
+      aria-roledescription={locale === 'zh' ? '轮播' : 'carousel'}
+      aria-label={dimension.label}
+    >
       <div ref={viewport} className={styles.viewport}>
         <ol className={styles.slides}>
           {dimension.cards.map((card, index) => (
@@ -201,8 +220,8 @@ export function IntroCarousel({
                   </span>
                   {visual(card, index)}
                   <span className={styles.cardTitle}>{card.title}</span>
+                  <span className={styles.cardSummary}>{card.copy}</span>
                 </button>
-                <p className={styles.cardSummary}>{card.copy}</p>
               </article>
             </li>
           ))}
@@ -266,6 +285,6 @@ export function IntroCarousel({
           </div>
         )}
       </dialog>
-    </div>
+    </section>
   );
 }

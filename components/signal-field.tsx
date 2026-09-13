@@ -1,7 +1,7 @@
 'use client';
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTheme } from '@/components/theme-switcher';
 import * as THREE from 'three';
 
@@ -110,12 +110,12 @@ const fragmentShader = /* glsl */ `
 function PointSurface() {
   const theme = useTheme();
   const material = useRef<THREE.ShaderMaterial>(null);
-  const { camera, size } = useThree();
+  const { camera, invalidate, size } = useThree();
   const compact = size.width < 768;
   const geometry = useMemo(() => {
     // The field now remains visible for the whole visit; bound mobile GPU work.
-    const columns = compact ? 280 : 600;
-    const rows = compact ? 168 : 360;
+    const columns = compact ? 180 : 420;
+    const rows = compact ? 108 : 252;
     const positions = new Float32Array(columns * rows * 3);
     const seeds = new Float32Array(columns * rows);
     let vertex = 0;
@@ -136,6 +136,24 @@ function PointSurface() {
     points.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
     return points;
   }, [compact]);
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      invalidate();
+      return;
+    }
+    let animationFrame = 0;
+    let lastFrame = 0;
+    const tick = (time: number) => {
+      if (time - lastFrame >= 1000 / 30) {
+        lastFrame = time;
+        invalidate();
+      }
+      animationFrame = window.requestAnimationFrame(tick);
+    };
+    animationFrame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [invalidate]);
 
   useFrame((state) => {
     camera.position.set(0, size.width < 760 ? 4.9 : 4.35, size.width < 760 ? 9.8 : 8.0);
@@ -164,9 +182,11 @@ function PointSurface() {
               typeof window !== 'undefined' &&
               window.matchMedia('(prefers-reduced-motion: reduce)').matches
                 ? 0
-                : 1,
+                : compact
+                  ? 0.72
+                  : 1,
           },
-          uPointScale: { value: 18 },
+          uPointScale: { value: compact ? 15 : 18 },
         }}
       />
     </points>
@@ -178,7 +198,8 @@ export function SignalField() {
   return (
     <Canvas
       className="signal-field"
-      dpr={[1, 1.35]}
+      dpr={[1, 1.1]}
+      frameloop="demand"
       fallback={<div className="signal-field signal-field-fallback" aria-hidden="true" />}
       camera={{ position: [0, 4.35, 8], fov: 42, near: 0.1, far: 30 }}
       gl={{ alpha: false, antialias: false, powerPreference: 'high-performance' }}

@@ -22,7 +22,8 @@ export function SitePage() {
 
   useEffect(() => {
     const handlePetScroll = () => {
-      setPetDocked(window.scrollY > 48);
+      const nextDocked = window.scrollY > 48;
+      setPetDocked((current) => current === nextDocked ? current : nextDocked);
     };
 
     handlePetScroll();

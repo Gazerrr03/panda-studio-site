@@ -184,13 +184,14 @@ main { isolation: isolate; }
 
 .panda-pet {
   --pet-top: 23px;
-  --pet-left: calc(max(20px, (100% - 1440px) / 2) + 129px);
+  --pet-left: calc(max(20px, (100vw - 1440px) / 2) + 129px);
   position: fixed;
-  z-index: 25;
+  z-index: 60;
   top: var(--pet-top);
   left: var(--pet-left);
   width: 88px;
   height: 96px;
+  overflow: visible;
   pointer-events: none;
   user-select: none;
   transform: translate3d(0, 0, 0);
@@ -220,7 +221,15 @@ main { isolation: isolate; }
 }
 
 .panda-pet--docked .panda-pet__trigger {
-  transform: scale(2.4444);
+  width: 88px;
+  height: 96px;
+  transform: none;
+}
+
+.panda-pet--docked .panda-pet__character {
+  width: 88px;
+  height: 96px;
+  transform: none;
 }
 
 .panda-pet__trigger:focus-visible {
@@ -231,6 +240,10 @@ main { isolation: isolate; }
 
 .panda-pet__trigger:active {
   transform: scale(2.36);
+}
+
+.panda-pet--docked .panda-pet__trigger:active {
+  transform: scale(.96);
 }
 
 .panda-pet--jumping .panda-pet__character {
@@ -1513,6 +1526,93 @@ main[data-locale='zh'] .site-footer p {
   .panda-pet__input-row input { min-height: 44px; font-size: 16px; }
   .panda-pet__input-row button { min-width: 44px; min-height: 44px; }
   .panda-pet__greeting, .panda-pet__answer { font-size: .9rem; line-height: 1.55; }
+}
+
+/* Mobile keeps the fixed field present, but lowers its visual and GPU cost. */
+@media (max-width: 767px) {
+  :root { --header-height: calc(108px + env(safe-area-inset-top)); }
+  .site-header {
+    padding-top: env(safe-area-inset-top);
+    background: rgba(var(--paper-rgb), .92);
+  }
+  .global-signal { opacity: .68; }
+  .hero { min-height: 100dvh; }
+  .hero::before {
+    background:
+      linear-gradient(90deg, rgba(var(--paper-rgb), .68) 0%, rgba(var(--paper-rgb), .18) 62%, rgba(var(--paper-rgb), .4) 100%),
+      linear-gradient(0deg, var(--paper) 0%, rgba(var(--paper-rgb), .88) 24%, rgba(var(--paper-rgb), .28) 66%, transparent 84%);
+  }
+  .records-section {
+    background: rgba(var(--paper-rgb), .9);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .site-footer {
+    background: rgba(var(--paper-rgb), .88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .panda-pet {
+    --pet-top: calc(18px + env(safe-area-inset-top));
+  }
+  .panda-pet__trigger {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+  }
+  .panda-pet--docked {
+    top: auto;
+    left: auto;
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    transform: none;
+  }
+  .panda-pet--docked .panda-pet__trigger {
+    width: 44px;
+    height: 44px;
+    transform: none;
+  }
+  .panda-pet--docked .panda-pet__trigger .panda-pet__character {
+    width: 30px;
+    height: 33px;
+    transform: scale(1.35);
+  }
+  .panda-pet__trigger:active {
+    transform: scale(.95);
+  }
+  .panda-pet--open .panda-pet__trigger {
+    transform: none;
+  }
+  .album-row {
+    gap: 16px;
+    grid-auto-columns: min(82vw, 320px);
+    padding-inline: 0 16px;
+    scroll-padding-inline: 16px;
+    touch-action: pan-x;
+  }
+  .album-row > li { scroll-snap-align: center; }
+  .record-details {
+    scroll-margin-top: calc(var(--header-height) + 24px);
+  }
+}
+
+@media (max-width: 380px) {
+  .wordmark-type { width: 80px; }
+  .wordmark-mark { width: 28px; height: 28px; flex-basis: 28px; }
+  .site-header nav { gap: 10px; }
+  .language-switcher button { min-width: 44px; }
+  .theme-switcher { width: 44px; height: 44px; flex-basis: 44px; }
+}
+
+@media (max-width: 767px) and (prefers-reduced-transparency: reduce) {
+  .site-header,
+  .records-section,
+  .site-footer {
+    background: var(--paper);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,10 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import {
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+} from 'react';
 import { IntroCarousel } from './intro-carousel';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
 import type { IntroDimension } from '@/content/studio';
 import type { Locale, SiteCopy } from '@/content/i18n';
 import styles from './club-intro.module.css';
@@ -24,8 +29,8 @@ export function ClubIntro({
   locale,
 }: ClubIntroProps) {
   const root = useRef<HTMLElement>(null);
-  const smooth = useRef<Lenis | null>(null);
   const [active, setActive] = useState(0);
+  const [railMode, setRailMode] = useState<'expanded' | 'compact'>('expanded');
   const count = dimensions.reduce(
     (total, dimension) => total + dimension.cards.length,
     0,
@@ -36,17 +41,80 @@ export function ClubIntro({
     if (!section) return;
     const media = gsap.matchMedia();
     const context = gsap.context(() => {
-      section
-        .querySelectorAll<HTMLElement>('[data-chapter]')
-        .forEach((chapter, index) => {
-          ScrollTrigger.create({
-            trigger: chapter,
-            start: 'top 40%',
-            end: 'bottom 40%',
-            onEnter: () => setActive(index),
-            onEnterBack: () => setActive(index),
+      const rail = section.querySelector<HTMLElement>('[data-rail]');
+      const railRelease = section.querySelector<HTMLElement>(
+        '[data-rail-release]',
+      );
+
+      media.add(
+        '(min-width: 768px) and (pointer: fine)',
+        () => {
+          if (!rail || !railRelease) return;
+          const setRailState = (state: 'expanded' | 'compact') => {
+            rail.dataset.state = state;
+            setRailMode(state);
+          };
+          const headerOffset = () => {
+            const value = Number.parseFloat(
+              getComputedStyle(document.documentElement).getPropertyValue(
+                '--header-height',
+              ),
+            );
+            return Number.isFinite(value) ? value + 16 : 104;
+          };
+
+          setRailState('expanded');
+          const trigger = ScrollTrigger.create({
+            trigger: railRelease,
+            start: () => `top top+=${headerOffset()}px`,
+            onEnter: () => setRailState('compact'),
+            onLeave: () => setRailState('compact'),
+            onEnterBack: () => setRailState('compact'),
+            onLeaveBack: () => setRailState('expanded'),
+            onRefresh: (self) =>
+              setRailState(
+                window.scrollY >= self.start ? 'compact' : 'expanded',
+              ),
           });
+
+          return () => {
+            trigger.kill();
+            setRailState('expanded');
+          };
+        },
+        section,
+      );
+      const chapterAnchors = Array.from(
+        section.querySelectorAll<HTMLElement>('[data-chapter-anchor]'),
+      );
+      let chapterPositions: number[] = [];
+      const measureChapters = () => {
+        chapterPositions = chapterAnchors.map(
+          (anchor) => anchor.getBoundingClientRect().top + window.scrollY,
+        );
+      };
+      const updateActiveChapter = () => {
+        const threshold =
+          window.scrollY + (window.innerWidth < 768 ? 220 : 136) + 2;
+        let nextIndex = 0;
+        chapterPositions.forEach((documentTop, index) => {
+          if (documentTop <= threshold) nextIndex = index;
         });
+        setActive((current) => (current === nextIndex ? current : nextIndex));
+      };
+      measureChapters();
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top bottom',
+        end: 'bottom top',
+        onEnter: updateActiveChapter,
+        onEnterBack: updateActiveChapter,
+        onUpdate: updateActiveChapter,
+        onRefresh: () => {
+          measureChapters();
+          updateActiveChapter();
+        },
+      });
       media.add(
         '(prefers-reduced-motion: no-preference)',
         () => {
@@ -90,27 +158,6 @@ export function ClubIntro({
         },
         section,
       );
-      media.add(
-        '(min-width: 768px) and (pointer: fine) and (prefers-reduced-motion: no-preference)',
-        () => {
-          // Smooth wheel gestures only over this archive; retain native touch and keyboard scrolling.
-          const lenis = new Lenis({
-            autoRaf: true,
-            eventsTarget: section,
-            lerp: 0.085,
-            smoothWheel: true,
-            syncTouch: false,
-            prevent: (node) =>
-              node.matches('dialog, input, textarea, [data-lenis-prevent]'),
-          });
-          smooth.current = lenis;
-          lenis.on('scroll', () => ScrollTrigger.update());
-          return () => {
-            lenis.destroy();
-            smooth.current = null;
-          };
-        },
-      );
     }, section);
     let alive = true;
     void document.fonts.ready.then(() => {
@@ -128,25 +175,50 @@ export function ClubIntro({
       return;
     const chapter = document.getElementById(`${dimensions[index].id}-panel`);
     if (!chapter) return;
+    const anchor = root.current?.querySelector<HTMLElement>(
+      `[data-chapter-anchor="${dimensions[index].id}"]`,
+    );
     event.preventDefault();
     const reduced = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     ).matches;
-    // Numeric targets avoid compounding Lenis scroll-margin with the site's scroll-padding.
+    // Sticky panels report their current painted position, not their natural
+    // position in the document. Use the flow anchor so reverse navigation can
+    // return to an earlier panel after the folder stack has engaged.
+    const target = anchor ?? chapter;
     const top =
-      chapter.getBoundingClientRect().top +
+      target.getBoundingClientRect().top +
       window.scrollY -
-      (window.innerWidth < 768 ? 196 : 136);
-    if (smooth.current && !reduced)
-      smooth.current.scrollTo(top, {
-        duration: 1.25,
-        easing: (t) =>
-          t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
-      });
-    else window.scrollTo({ top, behavior: reduced ? 'instant' : 'smooth' });
+      (window.innerWidth < 768 ? 220 : 136);
+    window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
     chapter.focus({ preventScroll: true });
     setActive(index);
   };
+
+  const renderRailNav = (mode: 'expanded' | 'compact') => (
+    <nav
+      className={
+        mode === 'expanded' ? styles.railWide : styles.railCompact
+      }
+      aria-label={copy.dimensions}
+      aria-hidden={railMode !== mode}
+    >
+      {dimensions.map((dimension, index) => (
+        <a
+          key={`${mode}-${dimension.id}`}
+          href={`#${dimension.id}-panel`}
+          aria-current={
+            railMode === mode && active === index ? 'location' : undefined
+          }
+          tabIndex={railMode === mode ? 0 : -1}
+          onClick={(event) => navigate(event, index)}
+        >
+          <span>{dimension.number}</span>
+          <span>{dimension.label}</span>
+        </a>
+      ))}
+    </nav>
+  );
 
   return (
     <section
@@ -175,54 +247,66 @@ export function ClubIntro({
             </span>
           </p>
         </header>
-        <div className={styles.layout}>
-          <aside className={styles.rail}>
-            <nav aria-label={copy.dimensions}>
-              {dimensions.map((dimension, index) => (
-                <a
-                  key={dimension.id}
-                  href={`#${dimension.id}-panel`}
-                  aria-current={active === index ? 'location' : undefined}
-                  onClick={(event) => navigate(event, index)}
+        <div className={styles.layout} data-rail-mode={railMode}>
+          <div className={styles.railSlot}>
+            <aside
+              className={styles.rail}
+              data-rail
+              data-state="expanded"
+            >
+              <div className={styles.railStage}>
+                {renderRailNav('expanded')}
+                {renderRailNav('compact')}
+              </div>
+            </aside>
+          </div>
+          <div
+            className={styles.railRelease}
+            data-rail-release
+            aria-hidden="true"
+          />
+          <div className={styles.chapters} data-active-index={active}>
+            {dimensions.map((dimension, index) => (
+              <Fragment key={dimension.id}>
+                <span
+                  className={styles.chapterAnchor}
+                  data-chapter-anchor={dimension.id}
+                  aria-hidden="true"
+                />
+                <section
+                  id={`${dimension.id}-panel`}
+                  data-chapter
+                  data-chapter-index={index}
+                  className={styles.chapter}
+                  tabIndex={-1}
+                  aria-labelledby={`${dimension.id}-title`}
                 >
-                  <span>{dimension.number}</span>
-                  <span>{dimension.label}</span>
-                  <span className={styles.navArrow} aria-hidden="true">
-                    ↘
-                  </span>
-                </a>
-              ))}
-            </nav>
-            <div className={styles.capabilities}>
-              <p>{copy.sharedCapabilities}</p>
-              <ul>
-                {sharedCapabilities.map((capability) => (
-                  <li key={capability}>{capability}</li>
-                ))}
-              </ul>
-            </div>
-          </aside>
-          <div className={styles.chapters}>
-            {dimensions.map((dimension) => (
-              <section
-                key={dimension.id}
-                id={`${dimension.id}-panel`}
-                data-chapter
-                className={styles.chapter}
-                tabIndex={-1}
-                aria-labelledby={`${dimension.id}-title`}
-              >
-                <header className={styles.chapterHeading} data-reveal>
-                  <span className={styles.chapterNumber}>
-                    {dimension.number}
-                  </span>
-                  <div>
-                    <h3 id={`${dimension.id}-title`}>{dimension.title}</h3>
-                    <p>{dimension.description}</p>
+                  <div className={styles.chapterTab} aria-hidden="true">
+                    <span>{dimension.number}</span>
+                    <span>{dimension.label}</span>
                   </div>
-                </header>
-                <IntroCarousel dimension={dimension} locale={locale} />
-              </section>
+                  {index === 0 ? (
+                    <div className={styles.capabilities}>
+                      <p>{copy.sharedCapabilities}</p>
+                      <ul>
+                        {sharedCapabilities.map((capability) => (
+                          <li key={capability}>{capability}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  <header className={styles.chapterHeading} data-reveal>
+                    <span className={styles.chapterNumber}>
+                      {dimension.number}
+                    </span>
+                    <div>
+                      <h3 id={`${dimension.id}-title`}>{dimension.title}</h3>
+                      <p>{dimension.description}</p>
+                    </div>
+                  </header>
+                  <IntroCarousel dimension={dimension} locale={locale} />
+                </section>
+              </Fragment>
             ))}
           </div>
         </div>
@@ -233,8 +317,7 @@ export function ClubIntro({
               : 'From meeting to making.'}
           </span>
           <a href="#records">
-            {locale === 'zh' ? '查看作品' : 'Explore the records'}{' '}
-            <span aria-hidden="true">↘</span>
+            {locale === 'zh' ? '查看作品' : 'Explore the records'}
           </a>
         </div>
       </div>
